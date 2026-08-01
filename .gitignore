@@ -1,4 +1,3 @@
-# Logs
 logs
 *.log
 npm-debug.log*
@@ -7,21 +6,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Node / Frontend
 node_modules/
 dist/
 dist-ssr/
 build/
 .pnpm-store/
 
-# Environment files
 .env
 .env.local
 .env.*.local
 *.env
 !.env.example
 
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -38,7 +34,6 @@ ENV/
 .coverage
 htmlcov/
 
-# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
@@ -50,4 +45,5 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
 
