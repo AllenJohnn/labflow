@@ -22,12 +22,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SESSION_SECRET_KEY
 )
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,16 +35,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 app.include_router(
     health.router,
     prefix="/api/v1/health",
     tags=["Health"]
 )
 
-
 app.include_router(
     auth.router,
     prefix="/api/v1/auth",
     tags=["Authentication"]
-)
+)

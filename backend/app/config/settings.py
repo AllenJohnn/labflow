@@ -19,8 +19,8 @@ class Settings:
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
     JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
     
-    SESSION_SECRET_KEY = os.getenv("w81SXiyHh7vQejIUE2g073JY3a767pg03oPYvzamd_ZG31eS6MFwEje8B0eREOqQYIYYHL9-H5TgSjNX4lq7rA", "")
+    SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY", "")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
-settings = Settings()
-print("MongoDB URI loaded:", bool(settings.MONGODB_URI))
+
+settings = Settings()
