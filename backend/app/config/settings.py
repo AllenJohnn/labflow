@@ -14,7 +14,8 @@ class Settings:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
 
     MONGODB_URI = os.getenv("MONGODB_URI", "")
-    DATABASE_NAME = os.getenv("DATABASE_NAME", "labflow")
+    MONGODB_DB = os.getenv("MONGODB_DB", "labflow")
 
 
 settings = Settings()
+print("MongoDB URI loaded:", bool(settings.MONGODB_URI))

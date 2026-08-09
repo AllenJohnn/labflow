@@ -1,12 +1,23 @@
 from fastapi import APIRouter
+from app.database.mongodb import db
 
 router = APIRouter()
 
 
 @router.get("/")
 async def health():
-    return {
-        "status": "ok",
-        "service": "LabFlow API",
-        "version": "1.0.0"
-    }
+    try:
+        await db.command("ping")
+
+        return {
+            "status": "ok",
+            "service": "LabFlow API",
+            "database": "connected"
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "database": "disconnected",
+            "detail": str(e)
+        }
