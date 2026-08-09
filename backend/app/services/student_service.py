@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 from bson import ObjectId
 
@@ -17,40 +18,41 @@ async def get_student_by_email(email: str):
     })
 
 
-async def get_student_by_id(student_id: str):
+async def get_student_by_id(student_db_id: str):
     try:
-        return await db.students.find_one({"_id": ObjectId(student_id)})
+        return await db.students.find_one({"_id": ObjectId(student_db_id)})
     except Exception:
         return None
 
 
-async def create_student(user: dict):
+async def create_student(data: dict):
     now = datetime.now(timezone.utc)
 
     password_hash = None
-    if "password" in user and user["password"]:
-        password_hash = hash_password(user["password"])
+    if "password" in data and data["password"]:
+        password_hash = hash_password(data["password"])
 
-    student = {
-        "google_id": user.get("sub") or user.get("google_id"),
-        "name": user.get("name", "Student User"),
-        "email": user["email"].lower().strip(),
+    student_doc = {
+        "google_id": data.get("google_id"),
+        "name": data.get("name", "Student"),
+        "email": data["email"].lower().strip(),
         "password_hash": password_hash,
-        "profile_picture": user.get("picture"),
-        "student_id": user.get("student_id"),
-        "department": user.get("department", "MCA"),
-        "semester": user.get("semester", 1),
+        "profile_picture": data.get("profile_picture"),
+        "student_id": data.get("student_id"),
+        "department": data.get("department", "MCA"),
+        "semester": data.get("semester", 1),
+        "github_username": data.get("github_username"),
+        "phone": data.get("phone", ""),
+        "avatar": data.get("avatar", ""),
         "role": "student",
-        "github_username": user.get("github_username"),
-        "github_connected": bool(user.get("github_username")),
-        "onboarding_completed": bool(user.get("onboarding_completed", False)),
+        "onboarding_completed": bool(data.get("onboarding_completed", False)),
         "created_at": now,
         "updated_at": now
     }
 
-    result = await db.students.insert_one(student)
-    student["_id"] = result.inserted_id
-    return student
+    result = await db.students.insert_one(student_doc)
+    student_doc["_id"] = result.inserted_id
+    return student_doc
 
 
 async def verify_student_credentials(email: str, password: str):
@@ -62,20 +64,24 @@ async def verify_student_credentials(email: str, password: str):
     return None
 
 
+async def get_all_students():
+    cursor = db.students.find({})
+    return await cursor.to_list(length=500)
+
+
 async def update_student_profile(student_id: str, profile_data: dict):
     now = datetime.now(timezone.utc)
     update_fields = {
-        "updated_at": now,
-        "onboarding_completed": True
+        "updated_at": now
     }
 
-    allowed_keys = ["student_id", "department", "semester", "github_username"]
+    allowed_keys = [
+        "student_id", "department", "semester", "github_username",
+        "phone", "name", "avatar", "onboarding_completed"
+    ]
     for key in allowed_keys:
         if key in profile_data and profile_data[key] is not None:
             update_fields[key] = profile_data[key]
-
-    if "github_username" in update_fields:
-        update_fields["github_connected"] = bool(update_fields["github_username"])
 
     await db.students.update_one(
         {"_id": ObjectId(student_id)},
@@ -85,14 +91,20 @@ async def update_student_profile(student_id: str, profile_data: dict):
     return await get_student_by_id(student_id)
 
 
+DEFAULT_STUDENT_EMAIL = os.getenv("DEFAULT_STUDENT_EMAIL", "student@fisat.ac.in")
+DEFAULT_STUDENT_PASS = os.getenv("DEFAULT_STUDENT_PASSWORD", "student123")
+
+
 async def init_default_student():
     try:
-        existing = await get_student_by_email("student@fisat.ac.in")
+        email = DEFAULT_STUDENT_EMAIL
+        password = DEFAULT_STUDENT_PASS
+        existing = await get_student_by_email(email)
         if existing:
             await db.students.update_one(
                 {"_id": existing["_id"]},
                 {"$set": {
-                    "password_hash": hash_password("student123"),
+                    "password_hash": hash_password(password),
                     "role": "student",
                     "onboarding_completed": True
                 }}
@@ -103,8 +115,8 @@ async def init_default_student():
                 await db.students.update_one(
                     {"_id": existing_by_roll["_id"]},
                     {"$set": {
-                        "email": "student@fisat.ac.in",
-                        "password_hash": hash_password("student123"),
+                        "email": email,
+                        "password_hash": hash_password(password),
                         "role": "student",
                         "onboarding_completed": True
                     }}
@@ -112,8 +124,8 @@ async def init_default_student():
             else:
                 await create_student({
                     "name": "Alex Johnson",
-                    "email": "student@fisat.ac.in",
-                    "password": "student123",
+                    "email": email,
+                    "password": password,
                     "student_id": "FIT25MCA-2008",
                     "department": "MCA",
                     "semester": 2,
@@ -122,7 +134,3 @@ async def init_default_student():
                 })
     except Exception as e:
         print(f"Default student initialization notice: {e}")
-
-
-
-

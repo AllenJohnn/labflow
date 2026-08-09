@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 from bson import ObjectId
 from app.database.mongodb import db
@@ -43,25 +44,32 @@ async def verify_admin_credentials(email: str, password: str):
     return None
 
 
+DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@fisat.ac.in")
+DEFAULT_ADMIN_PASS = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
+
+
 async def init_default_admin():
     try:
-        existing = await get_admin_by_email("admin@fisat.ac.in")
+        email = DEFAULT_ADMIN_EMAIL
+        password = DEFAULT_ADMIN_PASS
+        existing = await get_admin_by_email(email)
         if existing:
             await db.admins.update_one(
                 {"_id": existing["_id"]},
                 {"$set": {
-                    "password_hash": hash_password("admin123"),
+                    "password_hash": hash_password(password),
                     "role": "admin"
                 }}
             )
         else:
             await create_admin({
                 "name": "System Administrator",
-                "email": "admin@fisat.ac.in",
-                "password": "admin123",
+                "email": email,
+                "password": password,
                 "department": "Central IT & Lab Administration"
             })
     except Exception as e:
         print(f"Default admin initialization notice: {e}")
+
 
 

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 from bson import ObjectId
 from app.database.mongodb import db
@@ -20,30 +21,31 @@ async def get_faculty_by_google_id(google_id: str):
 
 
 async def create_faculty(data: dict):
-    now = datetime.now(timezone.utc)
-    
     password_hash = None
     if "password" in data and data["password"]:
         password_hash = hash_password(data["password"])
 
-    faculty_doc = {
-        "google_id": data.get("google_id"),
-        "name": data.get("name", "Faculty Member"),
+    doc = {
+        "name": data.get("name", ""),
         "email": data["email"].lower().strip(),
         "password_hash": password_hash,
-        "profile_picture": data.get("profile_picture"),
-        "faculty_id": data.get("faculty_id"),
-        "department": data.get("department", "MCA"),
+        "faculty_id": data.get("faculty_id", ""),
+        "department": data.get("department", "Computer Applications"),
         "designation": data.get("designation", "Assistant Professor"),
+        "phone": data.get("phone", ""),
+        "office_location": data.get("office_location", ""),
+        "avatar": data.get("avatar", ""),
+        "assigned_subjects": data.get("assigned_subjects", []),
+        "assigned_labs": data.get("assigned_labs", []),
         "role": "faculty",
-        "onboarding_completed": bool(data.get("onboarding_completed", False)),
-        "created_at": now,
-        "updated_at": now
+        "onboarding_completed": data.get("onboarding_completed", True),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
     }
 
-    result = await db.faculty.insert_one(faculty_doc)
-    faculty_doc["_id"] = result.inserted_id
-    return faculty_doc
+    result = await db.faculty.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return doc
 
 
 async def verify_faculty_credentials(email: str, password: str):
@@ -55,18 +57,13 @@ async def verify_faculty_credentials(email: str, password: str):
     return None
 
 
-async def update_faculty_profile(faculty_id: str, profile_data: dict):
-    now = datetime.now(timezone.utc)
-    update_fields = {
-        "updated_at": now,
-        "onboarding_completed": True
-    }
+async def get_all_faculty():
+    cursor = db.faculty.find({})
+    return await cursor.to_list(length=200)
 
-    allowed_keys = ["faculty_id", "department", "designation", "name"]
-    for key in allowed_keys:
-        if key in profile_data and profile_data[key] is not None:
-            update_fields[key] = profile_data[key]
 
+async def update_faculty_profile(faculty_id: str, update_fields: dict):
+    update_fields["updated_at"] = datetime.now(timezone.utc)
     await db.faculty.update_one(
         {"_id": ObjectId(faculty_id)},
         {"$set": update_fields}
@@ -75,14 +72,20 @@ async def update_faculty_profile(faculty_id: str, profile_data: dict):
     return await get_faculty_by_id(faculty_id)
 
 
+DEFAULT_FACULTY_EMAIL = os.getenv("DEFAULT_FACULTY_EMAIL", "faculty@fisat.ac.in")
+DEFAULT_FACULTY_PASS = os.getenv("DEFAULT_FACULTY_PASSWORD", "faculty123")
+
+
 async def init_default_faculty():
     try:
-        existing = await get_faculty_by_email("faculty@fisat.ac.in")
+        email = DEFAULT_FACULTY_EMAIL
+        password = DEFAULT_FACULTY_PASS
+        existing = await get_faculty_by_email(email)
         if existing:
             await db.faculty.update_one(
                 {"_id": existing["_id"]},
                 {"$set": {
-                    "password_hash": hash_password("faculty123"),
+                    "password_hash": hash_password(password),
                     "role": "faculty",
                     "onboarding_completed": True
                 }}
@@ -90,8 +93,8 @@ async def init_default_faculty():
         else:
             await create_faculty({
                 "name": "Dr. Sarah Thomas",
-                "email": "faculty@fisat.ac.in",
-                "password": "faculty123",
+                "email": email,
+                "password": password,
                 "faculty_id": "FAC-MCA-001",
                 "department": "MCA",
                 "designation": "Associate Professor",
@@ -99,6 +102,3 @@ async def init_default_faculty():
             })
     except Exception as e:
         print(f"Default faculty initialization notice: {e}")
-
-
-
