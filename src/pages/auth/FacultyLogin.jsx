@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import fisatLogo from "../../assets/fisat-logo.jpeg";
 
-export default function Login() {
+export default function FacultyLogin() {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleGoogleLogin = () => {
     setIsRedirecting(true);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
-    window.location.href = `${apiBaseUrl}/api/v1/auth/student/google/login`;
+    window.location.href = `${apiBaseUrl}/api/v1/auth/faculty/google/login`;
   };
 
   return (
@@ -49,8 +49,8 @@ export default function Login() {
               <div className="font-brand text-[18px] font-semibold tracking-tight text-[#164a9c] sm:text-[20px]">
                 LabFlow
               </div>
-              <div className="text-[12px] text-slate-400">
-                Programming Laboratory
+              <div className="text-[12px] font-medium text-[#159447]">
+                Faculty Portal
               </div>
             </div>
           </div>
@@ -60,11 +60,11 @@ export default function Login() {
         <main className="relative flex flex-1 items-center overflow-hidden">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-12 left-10 hidden select-none font-mono text-[13px] leading-6 text-[#164a9c] opacity-[0.06] xl:block"
+            className="pointer-events-none absolute bottom-12 left-10 hidden select-none font-mono text-[13px] leading-6 text-[#159447] opacity-[0.06] xl:block"
           >
-            <div>$ labflow auth --provider google</div>
-            <div>&gt; resolving student.fisat.ac.in</div>
-            <div>&gt; requesting institutional credentials</div>
+            <div>$ labflow auth --role faculty</div>
+            <div>&gt; resolving faculty.fisat.ac.in</div>
+            <div>&gt; verifying staff credentials</div>
             <div>&gt; awaiting sign-in<span className="animate-pulse">_</span></div>
           </div>
 
@@ -75,24 +75,29 @@ export default function Login() {
               </p>
 
               <h1 className="mt-2 font-brand text-[36px] font-semibold tracking-tight text-[#164a9c] sm:text-[42px]">
-                LabFlow
+                Faculty Portal
               </h1>
 
               <div className="mt-4 h-[2px] w-10 bg-[#159447]" />
 
               <p className="mt-5 max-w-[460px] text-[15px] leading-relaxed text-slate-500 font-normal">
-                Programming laboratory management platform for students and faculty of FISAT.
+                Programming laboratory management workspace for faculty members and course instructors of FISAT.
               </p>
             </section>
 
             <section className="w-full">
               <div className="bg-[#f9fafb] border border-slate-200/70 p-6 sm:p-8">
-                <h2 className="text-[19px] font-medium text-slate-800">
-                  Sign in
-                </h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[19px] font-medium text-slate-800">
+                    Faculty Sign in
+                  </h2>
+                  <span className="bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-[#159447] uppercase">
+                    Faculty
+                  </span>
+                </div>
 
                 <p className="mt-1 text-[12px] text-slate-400">
-                  Access your LabFlow account
+                  Access lab management & evaluation tools
                 </p>
 
                 <button
@@ -100,11 +105,11 @@ export default function Login() {
                   onClick={handleGoogleLogin}
                   disabled={isRedirecting}
                   aria-label="Sign in with Google"
-                  className="group mt-6 flex h-[48px] w-full items-center justify-between bg-white border border-slate-200 px-4 text-[13px] font-medium text-slate-700 transition hover:border-[#164a9c]/50 hover:bg-slate-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#164a9c] disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="group mt-6 flex h-[48px] w-full items-center justify-between bg-white border border-slate-200 px-4 text-[13px] font-medium text-slate-700 transition hover:border-[#159447]/50 hover:bg-slate-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#159447] disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {isRedirecting ? (
                     <div className="flex items-center gap-2 text-slate-500">
-                      <svg className="h-4 w-4 animate-spin text-[#164a9c]" viewBox="0 0 24 24" fill="none">
+                      <svg className="h-4 w-4 animate-spin text-[#159447]" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                       </svg>
@@ -121,7 +126,7 @@ export default function Login() {
                         </svg>
 
                         <span>
-                          Continue with Google
+                          Faculty Google Sign in
                         </span>
                       </div>
 
@@ -133,7 +138,7 @@ export default function Login() {
                 </button>
 
                 <p className="mt-6 text-center text-[11px] text-slate-400">
-                  Use your institutional Google account to continue.
+                  Use your institutional faculty Google account to continue.
                 </p>
               </div>
             </section>
@@ -151,11 +156,11 @@ export default function Login() {
               <span className="font-mono text-[11px]">© 2026 LabFlow</span>
               <span className="text-slate-300">•</span>
               <div className="flex items-center gap-2 text-[11px] font-medium">
-                <Link to="/faculty/login" className="text-slate-400 transition hover:text-[#159447] hover:underline">
-                  Faculty Login
+                <Link to="/login" className="text-slate-400 transition hover:text-[#164a9c] hover:underline">
+                  Student Login
                 </Link>
                 <span className="text-slate-300">•</span>
-                <Link to="/admin/login" className="text-slate-400 transition hover:text-[#164a9c] hover:underline">
+                <Link to="/admin/login" className="text-slate-400 transition hover:text-slate-700 hover:underline">
                   Admin Login
                 </Link>
               </div>

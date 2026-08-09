@@ -1,7 +1,13 @@
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
-load_dotenv()
+# Load .env file from app root or backend directory
+env_path = Path(__file__).resolve().parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    load_dotenv()
 
 
 class Settings:
@@ -10,7 +16,6 @@ class Settings:
 
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-
 
     MONGODB_URI = os.getenv("MONGODB_URI", "")
     MONGODB_DB = os.getenv("MONGODB_DB", "labflow")
@@ -23,4 +28,4 @@ class Settings:
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 
-settings = Settings()
+settings = Settings()

@@ -3,26 +3,23 @@
 **Date:** 01 August 2026
 
 ### Completed
-- FastAPI backend setup.
-- Google OAuth authentication.
-- Secure project configuration.
+- Setup FastAPI backend and project structure.
+- Configured Google OAuth authentication.
 - Initial project pushed to GitHub.
 
-### Next
-- MongoDB
-- JWT
-- React authentication
+---
 
 # Day 02
 
-**Date:** 02 August 2026
+**Date:** 09 August 2026
 
 ### Completed
-- MongoDB Atlas integration.
-- Student persistence with Google OAuth.
-- JWT authentication.
-- First-time and returning student login.
+- Connected MongoDB database.
+- Implemented JWT login authentication.
+- Built Student login with Google OAuth.
+- Added Faculty and Admin login routes.
+- Created Student, Faculty, and Admin dashboard pages.
 
 ### Next
-- Protected API routes.
-- React authentication.
+- Student academic profile setup.
+- Faculty lab assignment creation.
