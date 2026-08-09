@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Request
+
 from app.services.auth_service import oauth
 from app.services.student_service import (
     get_student_by_google_id,
     create_student
 )
+from app.services.jwt_service import create_access_token
+
 
 router = APIRouter()
 
@@ -31,17 +34,15 @@ async def google_callback(request: Request):
     if not student:
         student = await create_student(user)
 
-        return {
-            "message": "Student account created",
-            "student": {
-                "name": student["name"],
-                "email": student["email"],
-                "google_id": student["google_id"]
-            }
-        }
+    access_token = create_access_token(
+        str(student["_id"]),
+        student["google_id"]
+    )
 
     return {
         "message": "Student login successful",
+        "access_token": access_token,
+        "token_type": "bearer",
         "student": {
             "name": student["name"],
             "email": student["email"],
