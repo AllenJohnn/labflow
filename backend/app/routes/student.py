@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.dependencies.auth import get_current_student
 from app.services.student_service import update_student_profile
@@ -8,10 +8,9 @@ router = APIRouter()
 
 
 class ProfileUpdateSchema(BaseModel):
-    student_id: str = Field(..., min_length=2, description="Student Roll or Register Number (e.g. FIT25MCA-2008)")
-    department: str = Field(default="MCA", min_length=2, description="Department (e.g. MCA, SCE, CSE, EEE)")
-    semester: int = Field(default=1, ge=1, le=8, description="Current Semester (1-8)")
-    github_username: str | None = None
+    github_username: str | None = Field(default=None, description="Only GitHub username is editable by students")
+
+    model_config = ConfigDict(extra="forbid")
 
 
 @router.get("/me")
@@ -27,10 +26,12 @@ async def update_profile(
     payload: ProfileUpdateSchema,
     current_student: dict = Depends(get_current_student)
 ):
-    student_id = current_student["_id"]
+    student_id = str(current_student["_id"])
+    
+    # Strictly pass only github_username payload to service
     updated_student = await update_student_profile(
         student_id=student_id,
-        profile_data=payload.model_dump()
+        profile_data={"github_username": payload.github_username}
     )
 
     if not updated_student:
@@ -43,6 +44,7 @@ async def update_profile(
 
     return {
         "status": "success",
-        "message": "Profile updated successfully",
+        "message": "GitHub profile updated successfully",
         "data": updated_student
     }
+

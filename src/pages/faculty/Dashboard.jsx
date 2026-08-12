@@ -6,7 +6,6 @@ import { getFacultyProfile } from "../../services/facultyService";
 export default function FacultyDashboard() {
   const { user, logout } = useAuth();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadProfile() {
@@ -15,12 +14,11 @@ export default function FacultyDashboard() {
         setProfile(data);
       } catch (err) {
         console.error("Error loading faculty profile:", err);
-      } finally {
-        setLoading(false);
       }
     }
     loadProfile();
   }, []);
+
 
   return (
     <div className="min-h-screen bg-[#f4f8fa] text-slate-700">

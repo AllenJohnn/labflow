@@ -1,39 +1,33 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
+import { clearStudentCache } from "../services/studentService";
 
 const AuthContext = createContext(null);
 
+function parseJwtToken(token) {
+  if (!token) return null;
+  try {
+    const payloadBase64 = token.split(".")[1];
+    if (payloadBase64) {
+      const base64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    }
+  } catch (err) {
+    console.error("Token decoding error:", err);
+    localStorage.removeItem("labflow_token");
+    clearStudentCache();
+  }
+  return null;
+}
+
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem("labflow_token"));
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (token) {
-      try {
-        const payloadBase64 = token.split(".")[1];
-        if (payloadBase64) {
-          // Normalize base64 string for URL safe decoding
-          const base64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
-          const jsonPayload = decodeURIComponent(
-            atob(base64)
-              .split("")
-              .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-              .join("")
-          );
-          const decoded = JSON.parse(jsonPayload);
-          setUser(decoded);
-        }
-      } catch (err) {
-        console.error("Token decoding error:", err);
-        localStorage.removeItem("labflow_token");
-        setToken(null);
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
-    setLoading(false);
-  }, [token]);
+  const user = parseJwtToken(token);
 
   const login = (newToken) => {
     localStorage.setItem("labflow_token", newToken);
@@ -42,8 +36,8 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem("labflow_token");
+    clearStudentCache();
     setToken(null);
-    setUser(null);
   };
 
   return (
@@ -52,10 +46,10 @@ export function AuthProvider({ children }) {
         token,
         user,
         role: user?.role || "student",
-        loading,
-        isAuthenticated: !!token,
+        loading: false,
+        isAuthenticated: !!token && !!user,
         login,
-        logout
+        logout,
       }}
     >
       {children}
@@ -70,3 +64,4 @@ export function useAuth() {
   }
   return context;
 }
+

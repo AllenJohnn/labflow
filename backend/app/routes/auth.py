@@ -8,13 +8,15 @@ from app.services.student_service import (
     get_student_by_google_id,
     create_student,
     verify_student_credentials,
-    get_student_by_email
+    get_student_by_email,
+    link_student_google_account
 )
 from app.services.faculty_service import (
     get_faculty_by_google_id,
     create_faculty,
     verify_faculty_credentials,
-    get_faculty_by_email
+    get_faculty_by_email,
+    update_faculty_profile
 )
 from app.services.admin_service import (
     verify_admin_credentials,
@@ -65,6 +67,7 @@ async def student_login(credentials: LoginCredentialsSchema):
 @router.get("/student/google/login")
 async def student_google_login(request: Request):
     redirect_uri = request.url_for("google_callback")
+    print("[Auth] Google login started for student")
     return await oauth.google.authorize_redirect(
         request,
         redirect_uri,
@@ -106,6 +109,7 @@ async def faculty_login(credentials: LoginCredentialsSchema):
 @router.get("/faculty/google/login")
 async def faculty_google_login(request: Request):
     redirect_uri = request.url_for("google_callback")
+    print("[Auth] Google login started for faculty")
     return await oauth.google.authorize_redirect(
         request,
         redirect_uri,
@@ -144,37 +148,83 @@ async def admin_login(credentials: LoginCredentialsSchema):
 
 @router.get("/google/callback", name="google_callback")
 async def google_callback(request: Request):
+    print("[Auth] Google login callback received")
     token = await oauth.google.authorize_access_token(request)
     user = token.get("userinfo")
+    if not user or "sub" not in user:
+        print("[Auth] Error: Google userinfo or sub missing from token response")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to retrieve valid user info from Google"
+        )
+
     google_id = user["sub"]
+    email = user.get("email", "").lower().strip()
+    name = user.get("name", "User")
+    picture = user.get("picture", "")
 
     state = request.query_params.get("state", "student")
 
     if state == "faculty":
         user_obj = await get_faculty_by_google_id(google_id)
+        if not user_obj and email:
+            user_obj = await get_faculty_by_email(email)
+            if user_obj:
+                await update_faculty_profile(str(user_obj["_id"]), {
+                    "google_id": google_id,
+                    "profile_picture": picture
+                })
+                user_obj["google_id"] = google_id
+                user_obj["profile_picture"] = picture
         if not user_obj:
+            print(f"[Auth] Creating new faculty document in MongoDB for {email}")
             user_obj = await create_faculty({
                 "google_id": google_id,
-                "name": user.get("name"),
-                "email": user.get("email"),
-                "profile_picture": user.get("picture"),
+                "name": name,
+                "email": email,
+                "profile_picture": picture,
             })
         role = "faculty"
     else:
+        print(f"[Auth] Student lookup by google_id")
         user_obj = await get_student_by_google_id(google_id)
+        if not user_obj and email:
+            print(f"[Auth] Student not found by google_id, checking email {email}")
+            user_obj = await get_student_by_email(email)
+            if user_obj:
+                print(f"[Auth] Found existing student document by email. Linking Google ID")
+                user_obj = await link_student_google_account(
+                    student_id=str(user_obj["_id"]),
+                    google_id=google_id,
+                    picture=picture
+                )
         if not user_obj:
-            user_obj = await create_student(user)
+            print(f"[Auth] Student not found in MongoDB, creating new student document for {email}")
+            user_obj = await create_student({
+                "google_id": google_id,
+                "name": name,
+                "email": email,
+                "profile_picture": picture,
+                "student_id": None,
+                "department": "MCA",
+                "semester": 2,
+                "github_username": ""
+            })
+
+        else:
+            print(f"[Auth] Existing student found: {user_obj.get('email')}")
         role = "student"
 
     access_token = create_access_token(
         user_id=str(user_obj["_id"]),
         role=role,
         google_id=user_obj.get("google_id"),
-        name=user_obj.get("name", ""),
-        email=user_obj.get("email", ""),
-        picture=user_obj.get("profile_picture", "")
+        name=user_obj.get("name", name),
+        email=user_obj.get("email", email),
+        picture=user_obj.get("profile_picture", picture)
     )
 
+    print("[Auth] JWT created. Redirecting to frontend callback")
     frontend_redirect_url = f"{settings.FRONTEND_URL}/auth/callback?token={access_token}"
     return RedirectResponse(url=frontend_redirect_url)
 

@@ -4,19 +4,25 @@ from bson import ObjectId
 from app.database.mongodb import db
 from app.core.security import hash_password, verify_password
 
+DEFAULT_FACULTY_EMAIL = os.getenv("DEFAULT_FACULTY_EMAIL", "faculty@fisat.ac.in")
+DEFAULT_FACULTY_PASS = os.getenv("DEFAULT_FACULTY_PASSWORD", "faculty123")
+
 
 async def get_faculty_by_email(email: str):
+    if not email:
+        return None
     return await db.faculty.find_one({"email": email.lower().strip()})
 
 
 async def get_faculty_by_id(faculty_id: str):
-    try:
-        return await db.faculty.find_one({"_id": ObjectId(faculty_id)})
-    except Exception:
+    if not faculty_id or not ObjectId.is_valid(faculty_id):
         return None
+    return await db.faculty.find_one({"_id": ObjectId(faculty_id)})
 
 
 async def get_faculty_by_google_id(google_id: str):
+    if not google_id:
+        return None
     return await db.faculty.find_one({"google_id": google_id})
 
 
@@ -26,12 +32,14 @@ async def create_faculty(data: dict):
         password_hash = hash_password(data["password"])
 
     doc = {
-        "name": data.get("name", ""),
+        "google_id": data.get("google_id"),
+        "name": data.get("name", "Faculty Member"),
         "email": data["email"].lower().strip(),
         "password_hash": password_hash,
-        "faculty_id": data.get("faculty_id", ""),
+        "profile_picture": data.get("profile_picture"),
+        "faculty_id": data.get("faculty_id", "FAC-MCA-001"),
         "department": data.get("department", "Computer Applications"),
-        "designation": data.get("designation", "Assistant Professor"),
+        "designation": data.get("designation", "Associate Professor"),
         "phone": data.get("phone", ""),
         "office_location": data.get("office_location", ""),
         "avatar": data.get("avatar", ""),
@@ -43,17 +51,23 @@ async def create_faculty(data: dict):
         "updated_at": datetime.now(timezone.utc)
     }
 
-    result = await db.faculty.insert_one(doc)
-    doc["_id"] = result.inserted_id
-    return doc
+    try:
+        result = await db.faculty.insert_one(doc)
+        doc["_id"] = result.inserted_id
+        print(f"[Auth] Faculty created successfully in MongoDB: {doc['email']}")
+        return doc
+    except Exception as e:
+        print(f"[Auth] Error creating faculty in MongoDB ({data.get('email')}): {e}")
+        raise
 
 
 async def verify_faculty_credentials(email: str, password: str):
-    faculty = await get_faculty_by_email(email)
-    if not faculty or not faculty.get("password_hash"):
-        return None
-    if verify_password(password, faculty["password_hash"]):
-        return faculty
+    clean_email = email.lower().strip()
+    faculty = await get_faculty_by_email(clean_email)
+    if faculty and faculty.get("password_hash"):
+        if verify_password(password, faculty["password_hash"]):
+            return faculty
+
     return None
 
 
@@ -64,16 +78,20 @@ async def get_all_faculty():
 
 async def update_faculty_profile(faculty_id: str, update_fields: dict):
     update_fields["updated_at"] = datetime.now(timezone.utc)
-    await db.faculty.update_one(
-        {"_id": ObjectId(faculty_id)},
-        {"$set": update_fields}
-    )
+    if not ObjectId.is_valid(faculty_id):
+        return None
 
-    return await get_faculty_by_id(faculty_id)
-
-
-DEFAULT_FACULTY_EMAIL = os.getenv("DEFAULT_FACULTY_EMAIL", "faculty@fisat.ac.in")
-DEFAULT_FACULTY_PASS = os.getenv("DEFAULT_FACULTY_PASSWORD", "faculty123")
+    try:
+        result = await db.faculty.update_one(
+            {"_id": ObjectId(faculty_id)},
+            {"$set": update_fields}
+        )
+        if result.matched_count == 0:
+            return None
+        return await get_faculty_by_id(faculty_id)
+    except Exception as e:
+        print(f"[Faculty] Error updating profile for faculty {faculty_id}: {e}")
+        raise
 
 
 async def init_default_faculty():
@@ -87,9 +105,11 @@ async def init_default_faculty():
                 {"$set": {
                     "password_hash": hash_password(password),
                     "role": "faculty",
-                    "onboarding_completed": True
+                    "onboarding_completed": True,
+                    "updated_at": datetime.now(timezone.utc)
                 }}
             )
+            print(f"[Database] Default faculty initialized/verified in MongoDB: {email}")
         else:
             await create_faculty({
                 "name": "Dr. Sarah Thomas",
@@ -100,5 +120,7 @@ async def init_default_faculty():
                 "designation": "Associate Professor",
                 "onboarding_completed": True
             })
+            print(f"[Database] Default faculty inserted in MongoDB: {email}")
     except Exception as e:
-        print(f"Default faculty initialization notice: {e}")
+        print(f"[Database] Default faculty initialization notice: {e}")
+

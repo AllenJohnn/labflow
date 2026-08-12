@@ -4,6 +4,11 @@ import FacultyLogin from "../pages/auth/FacultyLogin";
 import AdminLogin from "../pages/auth/AdminLogin";
 import Callback from "../pages/auth/Callback";
 import StudentDashboard from "../pages/student/Dashboard";
+import StudentLaboratories from "../pages/student/Laboratories";
+import LaboratoryDetail from "../pages/student/LaboratoryDetail";
+import StudentExercises from "../pages/student/Exercises";
+import StudentSubmissions from "../pages/student/Submissions";
+import StudentProfile from "../pages/student/Profile";
 import FacultyDashboard from "../pages/faculty/Dashboard";
 import AdminDashboard from "../pages/admin/Dashboard";
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -17,6 +22,7 @@ export default function AppRoutes() {
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/auth/callback" element={<Callback />} />
       
+      {/* Student Protected Routes */}
       <Route
         path="/student/dashboard"
         element={
@@ -25,7 +31,48 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/student/laboratories"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentLaboratories />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/laboratory/:subjectId"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <LaboratoryDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/exercises"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentExercises />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/submissions"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentSubmissions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/profile"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentProfile />
+          </ProtectedRoute>
+        }
+      />
 
+      {/* Faculty & Admin Routes */}
       <Route
         path="/faculty/dashboard"
         element={

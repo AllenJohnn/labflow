@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -5,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config.settings import settings
+from app.database.mongodb import check_database_connection
 from app.database.indexes import create_indexes
 from app.services.admin_service import init_default_admin
 from app.services.faculty_service import init_default_faculty
@@ -12,12 +14,24 @@ from app.services.student_service import init_default_student
 from app.routes import health, auth, student, faculty, admin
 
 
+async def async_db_init():
+    """Background database initialization so server startup is verified."""
+    try:
+        await check_database_connection()
+        await create_indexes()
+        await init_default_admin()
+        await init_default_faculty()
+        await init_default_student()
+        print("[Database] Initialization completed successfully.")
+    except Exception as e:
+        print(f"[Database] Startup initialization notice: {e}")
+
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_indexes()
-    await init_default_admin()
-    await init_default_faculty()
-    await init_default_student()
+    # Launch database initialization in non-blocking background task
+    asyncio.create_task(async_db_init())
     yield
 
 
@@ -35,7 +49,14 @@ app.add_middleware(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        settings.FRONTEND_URL,
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
