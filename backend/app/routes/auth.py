@@ -210,10 +210,10 @@ async def google_callback(request: Request):
                 "semester": 2,
                 "github_username": ""
             })
-
         else:
             print(f"[Auth] Existing student found: {user_obj.get('email')}")
         role = "student"
+
 
     access_token = create_access_token(
         user_id=str(user_obj["_id"]),

@@ -28,13 +28,16 @@
 
 ### Completed
 - Refactored and polished Student Dashboard UI to strictly match the FISAT institutional visual style of `Login.jsx`.
-- Added dynamic time-based greeting ("Good morning / afternoon / evening, [Name]") and academic context header.
-- Implemented "Your Laboratories" section displaying assigned subject cards (`NSA`, `DBMS`, `JAVA`) with faculty names and navigation actions.
-- Built Announcement Bell popover component with unread indicator dot and popover list.
-- Created Student Sidebar navigation with responsive mobile drawer support.
-- Added "Recent Activity" list with academic status badges (`Submitted`, `Evaluated`, `Reviewed`).
-- Configured subject detail route (`/student/laboratory/:subjectId`) and secondary navigation placeholders.
+- Added dynamic time-based greeting ("Good morning / afternoon / evening, Allen") and academic context header (`MCA S2 · Computer Applications`).
+- Implemented "My Laboratories" section displaying assigned subject cards (`NSA`, `DBMS`, `JAVA`) with faculty names and navigation actions.
+- Tightened Laboratory card vertical spacing by 15-20% and aligned height across all course cards.
+- Redesigned Profile Institutional Information fields (Name, Email, Roll Number, Course, Semester) into clean, un-nested text displays without badges, lock icons, or disabled inputs.
+- Implemented Sonner toast notifications for profile updates (`toast.success` and `toast.error`).
+- Connected static syllabus PDF documents (`NSA-Syllabus-Demo.pdf`, `DBMS-Syllabus-Demo.pdf`, `JAVA-Syllabus-Demo.pdf`) opening natively in a new browser tab.
+- Built data-driven faculty exercise visibility layer (`isAssigned`), dynamically filtering assigned exercises and hiding unassigned exercises.
+- Resolved backend Google OAuth student creation issue (`E11000 duplicate key error` on `student_id_1` sparse index) and eliminated all fake fallback ObjectIds.
+- Implemented MongoDB connection health check (`check_database_connection`) and verified backend startup lifespan.
 
 ### Next
-- Connect backend API endpoints for student laboratories and exercise lists.
-- Faculty lab assignment creation & syllabus management.
+- Implement individual exercise view and in-browser IDE runner.
+- Faculty lab exercise assignment and submission evaluation controls.

@@ -1,14 +1,11 @@
 import api from "./api";
 
-// In-memory cache variables for instant page transitions
 let cachedProfile = null;
 let cachedLabs = null;
 let cachedAnnouncements = null;
 let cachedActivity = null;
 
-// Canonical exercise repository with faculty-assignment tracking
 const ALL_EXERCISES = [
-  // NSA Exercises (Rakhi)
   {
     id: "nsa-ex1",
     courseId: "nsa",
@@ -53,8 +50,6 @@ const ALL_EXERCISES = [
     status: "Not Started",
     dueDate: null,
   },
-
-  // DBMS Exercises (Shidha)
   {
     id: "dbms-ex1",
     courseId: "dbms",
@@ -110,8 +105,6 @@ const ALL_EXERCISES = [
     status: "Not Started",
     dueDate: null,
   },
-
-  // JAVA Exercises (Rosemary Mathew)
   {
     id: "java-ex1",
     courseId: "java",
@@ -180,12 +173,10 @@ const ALL_EXERCISES = [
   },
 ];
 
-// Synchronous getters for immediate render without loading delay
 export const getCachedProfile = () => cachedProfile;
 export const getCachedLaboratories = () => cachedLabs;
 export const getCachedAnnouncements = () => cachedAnnouncements;
 
-// Clear cache on user logout
 export const clearStudentCache = () => {
   cachedProfile = null;
   cachedLabs = null;
@@ -193,7 +184,6 @@ export const clearStudentCache = () => {
   cachedActivity = null;
 };
 
-// Fetch Student Profile from backend with in-memory caching
 export const getStudentProfile = async (forceRefresh = false) => {
   if (cachedProfile && !forceRefresh) {
     return cachedProfile;
@@ -204,8 +194,7 @@ export const getStudentProfile = async (forceRefresh = false) => {
       cachedProfile = res.data.data;
     }
     return cachedProfile;
-  } catch (err) {
-    console.warn("Backend profile endpoint notice, using default student context", err);
+  } catch {
     if (!cachedProfile) {
       cachedProfile = {
         name: "Allen John",
@@ -221,7 +210,6 @@ export const getStudentProfile = async (forceRefresh = false) => {
   }
 };
 
-// Update Student Profile & update cache synchronously
 export const updateStudentProfile = async (profileData) => {
   const payload = { github_username: profileData.github_username };
   try {
@@ -229,8 +217,7 @@ export const updateStudentProfile = async (profileData) => {
     if (res.data && res.data.data) {
       cachedProfile = { ...cachedProfile, ...res.data.data };
     }
-  } catch (err) {
-    console.warn("Backend profile update fallback", err);
+  } catch {
     cachedProfile = {
       ...(cachedProfile || {}),
       github_username: profileData.github_username,
@@ -239,7 +226,7 @@ export const updateStudentProfile = async (profileData) => {
   return cachedProfile;
 };
 
-// Mock data for Student Laboratories with instant caching & syllabusUrl
+
 export const getStudentLaboratories = async () => {
   if (cachedLabs) {
     return cachedLabs;
@@ -252,7 +239,7 @@ export const getStudentLaboratories = async () => {
       faculty: "Rakhi",
       department: "Computer Applications",
       semester: "S2",
-      exercisesCount: 1, // Only 1 assigned exercise currently visible
+      exercisesCount: 1,
       totalExercises: 4,
       syllabusUrl: "/syllabi/NSA-Syllabus-Demo.pdf",
     },
@@ -282,7 +269,6 @@ export const getStudentLaboratories = async () => {
   return cachedLabs;
 };
 
-// Data-driven fetch for assigned exercises of a specific course
 export const getAssignedExercisesByCourse = async (courseId) => {
   const normalizedId = (courseId || "").toLowerCase();
   return ALL_EXERCISES.filter(
@@ -290,12 +276,10 @@ export const getAssignedExercisesByCourse = async (courseId) => {
   );
 };
 
-// Data-driven fetch for all assigned exercises across enrolled courses
 export const getAllAssignedExercises = async () => {
   return ALL_EXERCISES.filter((ex) => ex.isAssigned);
 };
 
-// Mock data for Recent Announcements with caching
 export const getStudentAnnouncements = async () => {
   if (cachedAnnouncements) {
     return cachedAnnouncements;
@@ -326,7 +310,6 @@ export const getStudentAnnouncements = async () => {
   return cachedAnnouncements;
 };
 
-// Mock data for Recent Activity
 export const getStudentRecentActivity = async () => {
   if (cachedActivity) {
     return cachedActivity;
@@ -356,5 +339,6 @@ export const getStudentRecentActivity = async () => {
   ];
   return cachedActivity;
 };
+
 
 
