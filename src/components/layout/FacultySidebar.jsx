@@ -2,43 +2,30 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
-  FileText,
-  CheckSquare,
-  Calendar,
-  User,
+  CalendarCheck,
   LogOut,
   X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
-export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
+export default function FacultySidebar({ mobileOpen, setMobileOpen }) {
   const { logout } = useAuth();
 
   const navItems = [
     {
       name: "Dashboard",
-      path: "/student/dashboard",
+      path: "/faculty/dashboard",
       icon: LayoutDashboard,
     },
     {
       name: "My Laboratories",
-      path: "/student/laboratories",
+      path: "/faculty/laboratories",
       icon: BookOpen,
     },
     {
-      name: "Exercises",
-      path: "/student/exercises",
-      icon: FileText,
-    },
-    {
-      name: "Submissions",
-      path: "/student/submissions",
-      icon: CheckSquare,
-    },
-    {
-      name: "Attendance",
-      path: "/student/attendance",
-      icon: Calendar,
+      name: "Attendance Roster",
+      path: "/faculty/attendance",
+      icon: CalendarCheck,
     },
   ];
 
@@ -90,21 +77,6 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
         <div className="px-3 pb-2.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
           Account
         </div>
-        <NavLink
-          to="/student/profile"
-          onClick={() => setMobileOpen(false)}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2 text-[13px] font-medium transition-all ${
-              isActive
-                ? "bg-[#f0f4fa] text-[#164a9c] border-l-3 border-[#164a9c] font-semibold"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-            }`
-          }
-        >
-          <User className="h-4 w-4 shrink-0" />
-          <span>Profile</span>
-        </NavLink>
-
         <button
           type="button"
           onClick={() => {

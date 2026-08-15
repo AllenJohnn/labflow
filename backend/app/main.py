@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -9,7 +9,7 @@ from app.config.settings import settings
 from app.database.mongodb import check_database_connection
 from app.database.indexes import create_indexes
 from app.services.admin_service import init_default_admin
-from app.services.faculty_service import init_default_faculty
+from app.services.faculty_service import init_default_faculty, init_default_lab_data
 from app.services.student_service import init_default_student
 from app.routes import health, auth, student, faculty, admin
 
@@ -22,6 +22,7 @@ async def async_db_init():
         await init_default_admin()
         await init_default_faculty()
         await init_default_student()
+        await init_default_lab_data()
         print("[Database] Initialization completed successfully.")
     except Exception as e:
         print(f"[Database] Startup initialization notice: {e}")
@@ -35,12 +36,47 @@ async def lifespan(app: FastAPI):
     yield
 
 
+from fastapi.responses import JSONResponse
+from app.services.admin_service import is_maintenance_active, get_system_settings
+
 app = FastAPI(
     title="LabFlow API",
     description="Backend REST API for the LabFlow Programming Laboratory Management System.",
     version="1.0.0",
     lifespan=lifespan
 )
+
+@app.middleware("http")
+async def maintenance_middleware(request: Request, call_next):
+    path = request.url.path
+    # Exempt admin routes, health checks, authentication, docs, and openapi schema
+    if (
+        path.startswith("/api/v1/admin")
+        or path.startswith("/api/v1/health")
+        or path.startswith("/api/v1/auth")
+        or path.startswith("/docs")
+        or path.startswith("/openapi.json")
+    ):
+        return await call_next(request)
+
+    # Check maintenance mode status for other routes
+    if is_maintenance_active():
+        sys_settings = await get_system_settings()
+        if sys_settings.get("maintenance_mode", False):
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "maintenance",
+                    "detail": sys_settings.get(
+                        "maintenance_message",
+                        "Maintenance in progress. The system is temporarily unavailable while maintenance is being performed. Please try again later."
+                    ),
+                    "expected_return": sys_settings.get("expected_return", "Shortly"),
+                    "maintenance_mode": True
+                }
+            )
+
+    return await call_next(request)
 
 app.add_middleware(
     SessionMiddleware,

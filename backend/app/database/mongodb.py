@@ -5,9 +5,9 @@ from app.config.settings import settings
 client = AsyncMongoClient(
     settings.MONGODB_URI,
     tlsCAFile=certifi.where(),
-    serverSelectionTimeoutMS=5000,
-    connectTimeoutMS=5000,
-    socketTimeoutMS=5000
+    serverSelectionTimeoutMS=800,
+    connectTimeoutMS=800,
+    socketTimeoutMS=800
 )
 db = client[settings.MONGODB_DB]
 

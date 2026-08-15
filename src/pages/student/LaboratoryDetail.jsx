@@ -6,6 +6,7 @@ import {
   getStudentLaboratories,
   getAssignedExercisesByCourse,
   getStudentAnnouncements,
+  recordLabEntryAttendance,
   getCachedLaboratories,
   getCachedAnnouncements,
 } from "../../services/studentService";
@@ -20,6 +21,7 @@ export default function LaboratoryDetail() {
   const [announcements, setAnnouncements] = useState(() => getCachedAnnouncements() || []);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadData() {
       try {
         const [labs, exList, ann] = await Promise.all([
@@ -27,15 +29,24 @@ export default function LaboratoryDetail() {
           getAssignedExercisesByCourse(subjectId),
           getStudentAnnouncements(),
         ]);
-        const found = labs.find((item) => item.id === subjectId) || labs[0];
-        setLab(found);
-        setExercises(exList);
-        setAnnouncements(ann);
+        if (isMounted) {
+          const found = labs.find((item) => item.id === subjectId) || labs[0];
+          setLab(found);
+          setExercises(exList);
+          setAnnouncements(ann);
+        }
+        // Trigger laboratory entry attendance validation
+        if (subjectId) {
+          recordLabEntryAttendance(subjectId);
+        }
       } catch (err) {
         console.error("Error loading laboratory details:", err);
       }
     }
     loadData();
+    return () => {
+      isMounted = false;
+    };
   }, [subjectId]);
 
   const syllabusUrl = lab?.syllabusUrl || `/syllabi/${(lab?.code || subjectId || "NSA").toUpperCase()}-Syllabus-Demo.pdf`;
