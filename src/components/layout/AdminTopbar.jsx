@@ -12,7 +12,6 @@ export default function AdminTopbar({ profile, announcements, onToggleMobileSide
   return (
     <header className="shrink-0 border-b border-slate-200/80 bg-white">
       <div className="mx-auto flex h-[72px] items-center justify-between px-4 sm:px-8">
-        {/* Left: FISAT & LabFlow Institutional Branding */}
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -56,7 +55,6 @@ export default function AdminTopbar({ profile, announcements, onToggleMobileSide
           </div>
         </div>
 
-        {/* Right Actions: Notification Bell & Admin Info */}
         <div className="flex items-center gap-4">
           <AnnouncementPopover announcements={announcements} />
 

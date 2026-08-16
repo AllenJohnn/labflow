@@ -27,11 +27,9 @@ from app.dependencies.auth import get_current_user
 
 router = APIRouter()
 
-
 class LoginCredentialsSchema(BaseModel):
     email: EmailStr
     password: str
-
 
 @router.post("/student/login")
 async def student_login(credentials: LoginCredentialsSchema):
@@ -63,7 +61,6 @@ async def student_login(credentials: LoginCredentialsSchema):
         "user": student
     }
 
-
 @router.get("/student/google/login")
 async def student_google_login(request: Request):
     redirect_uri = request.url_for("google_callback")
@@ -73,7 +70,6 @@ async def student_google_login(request: Request):
         redirect_uri,
         state="student"
     )
-
 
 @router.post("/faculty/login")
 async def faculty_login(credentials: LoginCredentialsSchema):
@@ -105,7 +101,6 @@ async def faculty_login(credentials: LoginCredentialsSchema):
         "user": faculty
     }
 
-
 @router.get("/faculty/google/login")
 async def faculty_google_login(request: Request):
     redirect_uri = request.url_for("google_callback")
@@ -115,7 +110,6 @@ async def faculty_google_login(request: Request):
         redirect_uri,
         state="faculty"
     )
-
 
 @router.post("/admin/login")
 async def admin_login(credentials: LoginCredentialsSchema):
@@ -144,7 +138,6 @@ async def admin_login(credentials: LoginCredentialsSchema):
         "token_type": "bearer",
         "user": admin
     }
-
 
 @router.get("/google/callback", name="google_callback")
 async def google_callback(request: Request):
@@ -214,7 +207,6 @@ async def google_callback(request: Request):
             print(f"[Auth] Existing student found: {user_obj.get('email')}")
         role = "student"
 
-
     access_token = create_access_token(
         user_id=str(user_obj["_id"]),
         role=role,
@@ -227,7 +219,6 @@ async def google_callback(request: Request):
     print("[Auth] JWT created. Redirecting to frontend callback")
     frontend_redirect_url = f"{settings.FRONTEND_URL}/auth/callback?token={access_token}"
     return RedirectResponse(url=frontend_redirect_url)
-
 
 @router.get("/me")
 async def get_current_user_profile(current_user: dict = Depends(get_current_user)):

@@ -26,7 +26,6 @@ export default function Students() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
 
-  // Add Student Modal State
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [newStudent, setNewStudent] = useState({
     name: "",
@@ -132,7 +131,6 @@ export default function Students() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -155,7 +153,6 @@ export default function Students() {
           </div>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-4 text-[13px] border ${
@@ -181,10 +178,8 @@ export default function Students() {
           </div>
         )}
 
-        {/* Filters & Search Toolbar */}
         <div className="border border-slate-200/80 bg-white p-4 shadow-xs">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Search Input */}
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <input
@@ -196,7 +191,6 @@ export default function Students() {
               />
             </div>
 
-            {/* Program Filter */}
             <div>
               <select
                 value={programFilter}
@@ -210,7 +204,6 @@ export default function Students() {
               </select>
             </div>
 
-            {/* Semester Filter */}
             <div>
               <select
                 value={semesterFilter}
@@ -224,7 +217,6 @@ export default function Students() {
               </select>
             </div>
 
-            {/* Status Filter */}
             <div>
               <select
                 value={statusFilter}
@@ -239,7 +231,6 @@ export default function Students() {
           </div>
         </div>
 
-        {/* Student Table */}
         <div className="overflow-x-auto border border-slate-200/80 bg-white shadow-xs">
           <table className="w-full border-collapse text-left text-[13px]">
             <thead>
@@ -327,7 +318,6 @@ export default function Students() {
           </table>
         </div>
 
-        {/* MODAL: ADD STUDENT */}
         {addModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
             <div className="w-full max-w-md border border-slate-200 bg-white p-6 shadow-xl">

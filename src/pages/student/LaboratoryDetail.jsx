@@ -35,7 +35,6 @@ export default function LaboratoryDetail() {
           setExercises(exList);
           setAnnouncements(ann);
         }
-        // Trigger laboratory entry attendance validation
         if (subjectId) {
           recordLabEntryAttendance(subjectId);
         }
@@ -55,7 +54,6 @@ export default function LaboratoryDetail() {
   return (
     <StudentLayout announcements={announcements}>
       <div className="space-y-6">
-        {/* Back Navigation */}
         <div>
           <Link
             to="/student/dashboard"
@@ -66,7 +64,6 @@ export default function LaboratoryDetail() {
           </Link>
         </div>
 
-        {/* Header Subject Info */}
         <div className="border border-slate-200/80 bg-white p-6 shadow-2xs">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -83,7 +80,6 @@ export default function LaboratoryDetail() {
               </div>
             </div>
 
-            {/* View Syllabus Button — Opens Demo PDF in New Tab */}
             <a
               href={syllabusUrl}
               target="_blank"
@@ -96,7 +92,6 @@ export default function LaboratoryDetail() {
           </div>
         </div>
 
-        {/* Laboratory Exercises Section */}
         <div className="border border-slate-200/80 bg-white p-6 shadow-2xs">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h2 className="text-[16px] font-semibold text-slate-800 tracking-tight">
@@ -156,5 +151,3 @@ export default function LaboratoryDetail() {
     </StudentLayout>
   );
 }
-
-

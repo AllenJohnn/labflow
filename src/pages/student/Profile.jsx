@@ -72,7 +72,6 @@ export default function StudentProfile() {
   return (
     <StudentLayout profile={profile} announcements={announcements}>
       <div className="mx-auto max-w-[850px] space-y-5">
-        {/* Profile Header */}
         <div className="border-b border-slate-200/70 pb-3.5">
           <h1 className="text-[24px] font-bold text-slate-800 tracking-tight">
             Profile
@@ -82,7 +81,6 @@ export default function StudentProfile() {
           </p>
         </div>
 
-        {/* Personal Information */}
         <div className="border border-slate-200/80 bg-white p-5 shadow-2xs space-y-3.5">
           <h2 className="text-[14.5px] font-semibold text-slate-800 tracking-tight border-b border-slate-100 pb-2">
             Personal Information
@@ -109,7 +107,6 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Academic Information */}
         <div className="border border-slate-200/80 bg-white p-5 shadow-2xs space-y-3.5">
           <h2 className="text-[14.5px] font-semibold text-slate-800 tracking-tight border-b border-slate-100 pb-2">
             Academic Information
@@ -145,7 +142,6 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Developer Profile */}
         <form onSubmit={handleSave} className="border border-slate-200/80 bg-white p-5 shadow-2xs space-y-3.5">
           <h2 className="text-[14.5px] font-semibold text-slate-800 tracking-tight border-b border-slate-100 pb-2">
             Developer Profile
@@ -179,5 +175,3 @@ export default function StudentProfile() {
     </StudentLayout>
   );
 }
-
-

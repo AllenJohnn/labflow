@@ -28,13 +28,11 @@ export default function ClassDetail() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
 
-  // Reassignment Modal State
   const [reassignModalOpen, setReassignModalOpen] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedFacultyId, setSelectedFacultyId] = useState("");
   const [reassigning, setReassigning] = useState(false);
 
-  // Add Student Modal State
   const [addStudentModalOpen, setAddStudentModalOpen] = useState(false);
   const [newStudent, setNewStudent] = useState({
     name: "",
@@ -164,7 +162,6 @@ export default function ClassDetail() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Breadcrumb & Navigation */}
         <div className="flex items-center justify-between">
           <Link
             to="/admin/classes"
@@ -179,7 +176,6 @@ export default function ClassDetail() {
           </span>
         </div>
 
-        {/* Status Notification Banner */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-4 text-[13px] border ${
@@ -205,7 +201,6 @@ export default function ClassDetail() {
           </div>
         )}
 
-        {/* Class Overview Header */}
         <div className="border border-slate-200/80 bg-white p-6 shadow-xs">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -242,7 +237,6 @@ export default function ClassDetail() {
           </div>
         </div>
 
-        {/* SECTION 1: SUBJECTS & FACULTY ALLOCATION */}
         <section className="space-y-3">
           <div>
             <h2 className="text-[17px] font-bold text-slate-800 tracking-tight">
@@ -301,7 +295,6 @@ export default function ClassDetail() {
           </div>
         </section>
 
-        {/* SECTION 2: CLASS STUDENT ROSTER */}
         <section className="space-y-4 pt-2">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -313,7 +306,6 @@ export default function ClassDetail() {
               </p>
             </div>
 
-            {/* Search Input */}
             <div className="relative w-full sm:w-72">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <input
@@ -326,7 +318,6 @@ export default function ClassDetail() {
             </div>
           </div>
 
-          {/* Roster Table */}
           <div className="overflow-x-auto border border-slate-200/80 bg-white shadow-xs">
             <table className="w-full border-collapse text-left text-[13px]">
               <thead>
@@ -408,7 +399,6 @@ export default function ClassDetail() {
           </div>
         </section>
 
-        {/* MODAL: REASSIGN FACULTY TO COURSE */}
         {reassignModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
             <div className="w-full max-w-md border border-slate-200 bg-white p-6 shadow-xl">
@@ -479,7 +469,6 @@ export default function ClassDetail() {
           </div>
         )}
 
-        {/* MODAL: ADD STUDENT TO CLASS */}
         {addStudentModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
             <div className="w-full max-w-md border border-slate-200 bg-white p-6 shadow-xl">

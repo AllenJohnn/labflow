@@ -2,13 +2,11 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 
-# Load .env file from app root or backend directory
 env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 if env_path.exists():
     load_dotenv(dotenv_path=env_path)
 else:
     load_dotenv()
-
 
 class Settings:
     PROJECT_NAME = "LabFlow API"
@@ -23,9 +21,8 @@ class Settings:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
     JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
-    
+
     SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY", "")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-
 
 settings = Settings()

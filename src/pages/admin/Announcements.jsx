@@ -18,7 +18,6 @@ export default function Announcements() {
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
 
-  // New Announcement Form State
   const [formOpen, setFormOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -106,7 +105,6 @@ export default function Announcements() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -129,7 +127,6 @@ export default function Announcements() {
           </div>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-3.5 text-[13px] border ${
@@ -155,7 +152,6 @@ export default function Announcements() {
           </div>
         )}
 
-        {/* Publish Announcement Form Card */}
         {formOpen && (
           <div className="border border-slate-200/90 bg-white p-5 shadow-xs">
             <h2 className="text-[15px] font-bold text-slate-800 border-b border-slate-100 pb-2.5">
@@ -231,7 +227,6 @@ export default function Announcements() {
           </div>
         )}
 
-        {/* Announcements List */}
         <div className="space-y-3.5">
           {loading ? (
             <div className="py-12 text-center text-slate-400">

@@ -45,7 +45,6 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
   const sidebarContent = (
     <div className="flex h-full flex-col justify-between bg-white border-r border-slate-200/80 py-6 px-4">
       <div className="space-y-6">
-        {/* Mobile Close Button */}
         <div className="flex items-center justify-between lg:hidden pb-3 border-b border-slate-100">
           <span className="font-brand text-[15px] font-semibold text-[#164a9c]">Navigation</span>
           <button
@@ -57,7 +56,6 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
           </button>
         </div>
 
-        {/* Navigation Section */}
         <nav className="space-y-1">
           <div className="px-3 pb-2.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
             Menu
@@ -85,7 +83,6 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
         </nav>
       </div>
 
-      {/* Account Section */}
       <div className="space-y-1 border-t border-slate-100 pt-5">
         <div className="px-3 pb-2.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
           Account
@@ -122,12 +119,10 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <aside className="hidden w-60 shrink-0 lg:block">
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden flex">
           <div

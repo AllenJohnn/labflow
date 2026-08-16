@@ -5,7 +5,6 @@ import AdminLogin from "../pages/auth/AdminLogin";
 import Callback from "../pages/auth/Callback";
 import MaintenancePage from "../pages/auth/MaintenancePage";
 
-// Student Pages
 import StudentDashboard from "../pages/student/Dashboard";
 import StudentLaboratories from "../pages/student/Laboratories";
 import LaboratoryDetail from "../pages/student/LaboratoryDetail";
@@ -14,13 +13,11 @@ import StudentSubmissions from "../pages/student/Submissions";
 import StudentProfile from "../pages/student/Profile";
 import StudentAttendance from "../pages/student/Attendance";
 
-// Faculty Pages
 import FacultyDashboard from "../pages/faculty/Dashboard";
 import FacultyLaboratories from "../pages/faculty/Laboratories";
 import FacultyLaboratoryDetail from "../pages/faculty/LaboratoryDetail";
 import FacultyAttendance from "../pages/faculty/Attendance";
 
-// Admin Pages
 import AdminDashboard from "../pages/admin/Dashboard";
 import Classes from "../pages/admin/Classes";
 import ClassDetail from "../pages/admin/ClassDetail";
@@ -45,8 +42,7 @@ export default function AppRoutes() {
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/auth/callback" element={<Callback />} />
       <Route path="/maintenance" element={<MaintenancePage />} />
-      
-      {/* Student Protected Routes */}
+
       <Route
         path="/student/dashboard"
         element={
@@ -104,7 +100,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Faculty Routes */}
       <Route
         path="/faculty/dashboard"
         element={
@@ -138,7 +133,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* Admin Routes */}
       <Route
         path="/admin/dashboard"
         element={

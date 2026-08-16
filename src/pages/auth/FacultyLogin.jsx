@@ -14,8 +14,7 @@ export default function FacultyLogin() {
   return (
     <div className="min-h-screen bg-[#f4f8fa] px-4 py-4 text-slate-700 sm:px-6 sm:py-6">
       <div className="mx-auto flex min-h-[calc(100vh-32px)] max-w-[1300px] flex-col bg-white sm:min-h-[calc(100vh-48px)] border border-slate-200/80 shadow-xs">
-        
-        {/* Header */}
+
         <header className="shrink-0 border-b border-slate-100">
           <div className="flex flex-wrap items-center gap-y-4 px-5 py-4 sm:h-[96px] sm:flex-nowrap sm:px-10 sm:py-0">
             <div className="flex items-center gap-3.5">
@@ -56,7 +55,6 @@ export default function FacultyLogin() {
           </div>
         </header>
 
-        {/* Main */}
         <main className="relative flex flex-1 items-center overflow-hidden">
           <div
             aria-hidden="true"
@@ -145,7 +143,6 @@ export default function FacultyLogin() {
           </div>
         </main>
 
-        {/* Footer */}
         <footer className="shrink-0 border-t border-slate-100 bg-[#fcfdfe] px-5 py-3 text-[12px] text-slate-400 sm:h-[50px] sm:px-10 sm:py-0">
           <div className="flex h-full flex-col items-center gap-1 text-center sm:flex-row sm:justify-between sm:text-left">
             <span>

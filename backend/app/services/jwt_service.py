@@ -3,7 +3,6 @@ from jose import jwt
 
 from app.config.settings import settings
 
-
 def create_access_token(
     user_id: str,
     role: str = "student",
@@ -32,7 +31,6 @@ def create_access_token(
         algorithm=settings.JWT_ALGORITHM
     )
 
-
 def decode_access_token(token: str) -> dict | None:
     try:
         payload = jwt.decode(
@@ -42,4 +40,4 @@ def decode_access_token(token: str) -> dict | None:
         )
         return payload
     except Exception:
-        return None
+        return None

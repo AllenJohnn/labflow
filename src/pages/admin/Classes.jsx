@@ -40,7 +40,6 @@ export default function Classes() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -52,7 +51,6 @@ export default function Classes() {
               </p>
             </div>
 
-            {/* Program Filter Pills */}
             <div className="flex items-center gap-1.5 bg-slate-100 p-1 border border-slate-200/80">
               {programs.map((prog) => (
                 <button
@@ -72,7 +70,6 @@ export default function Classes() {
           </div>
         </div>
 
-        {/* Classes Grid */}
         {loading && classesList.length === 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((n) => (
@@ -105,7 +102,6 @@ export default function Classes() {
                     </span>
                   </div>
 
-                  {/* Summary of subjects */}
                   <div className="mt-4 border-t border-slate-100 pt-3">
                     <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                       Subjects & Assigned Faculty

@@ -33,15 +33,13 @@ export default function AdminLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#f4f8fa] text-slate-700 px-3 py-3 sm:px-6 sm:py-6">
       <div className="mx-auto flex min-h-[calc(100vh-24px)] max-w-[1400px] flex-col bg-white border border-slate-200/80 shadow-xs sm:min-h-[calc(100vh-48px)]">
-        
-        {/* Top Header */}
+
         <AdminTopbar
           profile={profile}
           announcements={announcements}
           onToggleMobileSidebar={() => setMobileOpen(true)}
         />
 
-        {/* Content Area with Sidebar */}
         <div className="flex flex-1 overflow-hidden">
           <AdminSidebar
             mobileOpen={mobileOpen}
@@ -55,7 +53,6 @@ export default function AdminLayout({ children }) {
           </main>
         </div>
 
-        {/* Institutional Footer */}
         <footer className="shrink-0 border-t border-slate-100 bg-[#fcfdfe] px-5 py-3 text-[12px] text-slate-400 sm:h-[46px] sm:px-8 sm:py-0">
           <div className="flex h-full flex-col items-center justify-between gap-1 text-center sm:flex-row sm:text-left">
             <span>Federal Institute of Science and Technology (FISAT)</span>

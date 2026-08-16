@@ -13,9 +13,7 @@ from app.services.faculty_service import init_default_faculty, init_default_lab_
 from app.services.student_service import init_default_student
 from app.routes import health, auth, student, faculty, admin
 
-
 async def async_db_init():
-    """Background database initialization so server startup is verified."""
     try:
         await check_database_connection()
         await create_indexes()
@@ -27,14 +25,10 @@ async def async_db_init():
     except Exception as e:
         print(f"[Database] Startup initialization notice: {e}")
 
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Launch database initialization in non-blocking background task
     asyncio.create_task(async_db_init())
     yield
-
 
 from fastapi.responses import JSONResponse
 from app.services.admin_service import is_maintenance_active, get_system_settings
@@ -49,7 +43,6 @@ app = FastAPI(
 @app.middleware("http")
 async def maintenance_middleware(request: Request, call_next):
     path = request.url.path
-    # Exempt admin routes, health checks, authentication, docs, and openapi schema
     if (
         path.startswith("/api/v1/admin")
         or path.startswith("/api/v1/health")
@@ -59,7 +52,6 @@ async def maintenance_middleware(request: Request, call_next):
     ):
         return await call_next(request)
 
-    # Check maintenance mode status for other routes
     if is_maintenance_active():
         sys_settings = await get_system_settings()
         if sys_settings.get("maintenance_mode", False):

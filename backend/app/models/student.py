@@ -1,7 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
-
 class Student(BaseModel):
 
     google_id: str | None = None
@@ -21,4 +20,4 @@ class Student(BaseModel):
     onboarding_completed: bool = True
 
     created_at: datetime
-    updated_at: datetime
+    updated_at: datetime

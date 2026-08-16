@@ -66,7 +66,6 @@ export default function Enrollments() {
       updatedCourses.push(cid);
     }
 
-    // Optimistic UI update
     setStudents((prev) =>
       prev.map((s) =>
         (s.student_id === studentId || s.id === studentId)
@@ -105,7 +104,6 @@ export default function Enrollments() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -117,7 +115,6 @@ export default function Enrollments() {
               </p>
             </div>
 
-            {/* Class Selectors */}
             <div className="flex items-center gap-2">
               <select
                 value={selectedProgram}
@@ -142,7 +139,6 @@ export default function Enrollments() {
           </div>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-3.5 text-[13px] border ${
@@ -168,7 +164,6 @@ export default function Enrollments() {
           </div>
         )}
 
-        {/* Search Toolbar */}
         <div className="flex items-center justify-between border border-slate-200/80 bg-white p-3.5 shadow-xs">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -186,7 +181,6 @@ export default function Enrollments() {
           </span>
         </div>
 
-        {/* Enrollment Matrix Table */}
         <div className="overflow-x-auto border border-slate-200/80 bg-white shadow-xs">
           <table className="w-full border-collapse text-left text-[13px]">
             <thead>

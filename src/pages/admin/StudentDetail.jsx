@@ -25,7 +25,6 @@ export default function StudentDetail() {
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
 
-  // Form State
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -148,7 +147,6 @@ export default function StudentDetail() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <Link
             to="/admin/students"
@@ -163,7 +161,6 @@ export default function StudentDetail() {
           </span>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-4 text-[13px] border ${
@@ -189,7 +186,6 @@ export default function StudentDetail() {
           </div>
         )}
 
-        {/* Header Profile Card */}
         <div className="border border-slate-200/80 bg-white p-6 shadow-xs">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
@@ -246,10 +242,8 @@ export default function StudentDetail() {
           </div>
         </div>
 
-        {/* Institutional Record Form */}
         <form onSubmit={handleSaveChanges} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* SECTION 1: PERSONAL INFORMATION */}
             <div className="border border-slate-200/80 bg-white p-5 shadow-xs space-y-4">
               <div className="border-b border-slate-100 pb-2.5">
                 <h2 className="text-[15px] font-bold text-slate-800">
@@ -301,7 +295,6 @@ export default function StudentDetail() {
               </div>
             </div>
 
-            {/* SECTION 2: ACADEMIC INFORMATION */}
             <div className="border border-slate-200/80 bg-white p-5 shadow-xs space-y-4">
               <div className="border-b border-slate-100 pb-2.5">
                 <h2 className="text-[15px] font-bold text-slate-800">
@@ -389,7 +382,6 @@ export default function StudentDetail() {
             </div>
           </div>
 
-          {/* SECTION 3: LABORATORY COURSE ENROLLMENTS */}
           <div className="border border-slate-200/80 bg-white p-5 shadow-xs space-y-4">
             <div className="border-b border-slate-100 pb-2.5">
               <h2 className="text-[15px] font-bold text-slate-800">
@@ -442,7 +434,6 @@ export default function StudentDetail() {
             </div>
           </div>
 
-          {/* SECTION 4: SUBMISSION & ATTENDANCE OVERVIEW */}
           <div className="border border-slate-200/80 bg-white p-5 shadow-xs space-y-3">
             <div className="border-b border-slate-100 pb-2.5">
               <h2 className="text-[15px] font-bold text-slate-800">
@@ -492,7 +483,6 @@ export default function StudentDetail() {
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex items-center justify-end gap-3 border-t border-slate-200/80 pt-4">
             <Link
               to="/admin/students"

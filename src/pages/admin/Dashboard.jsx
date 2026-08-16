@@ -55,7 +55,6 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  // Time-based greeting
   const getGreeting = (name) => {
     const hour = new Date().getHours();
     let prefix = "Good morning";
@@ -86,7 +85,6 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-7">
-        {/* Welcome Header */}
         <div className="border-b border-slate-200/80 pb-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -126,7 +124,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Global Institutional Metrics */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <Link
             to="/admin/students"
@@ -193,7 +190,6 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {/* PRIMARY SECTION: ACADEMIC CLASS NAVIGATOR */}
         <section className="space-y-4">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -280,7 +276,6 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* Quick Management Shortcuts */}
         <section className="border border-slate-200/80 bg-white p-5 shadow-xs">
           <h3 className="text-[14px] font-bold text-slate-800 tracking-tight uppercase tracking-wider text-slate-400 text-[11px]">
             Administrative Management Centers

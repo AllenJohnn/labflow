@@ -34,7 +34,7 @@ export default function FacultyLaboratoryDetail() {
   const { courseId } = useParams();
   const normalizedId = (courseId || "nsa").toLowerCase();
 
-  const [activeTab, setActiveTab] = useState("overview"); // overview, exercises, submissions, students, announcements
+  const [activeTab, setActiveTab] = useState("overview");
   const [profile, setProfile] = useState(null);
   const [lab, setLab] = useState(() => getCachedLabDetail(normalizedId));
   const [exercises, setExercises] = useState(() => getCachedExercises(normalizedId) || []);
@@ -42,17 +42,15 @@ export default function FacultyLaboratoryDetail() {
   const [students, setStudents] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
 
-  // Syllabus Upload State
   const [syllabusUrl, setSyllabusUrl] = useState(() => `/syllabi/${normalizedId.toUpperCase()}_Syllabus.pdf`);
   const [isUploadingSyllabus, setIsUploadingSyllabus] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Filters, Modals & Inspection State
   const [submissionExerciseFilter, setSubmissionExerciseFilter] = useState("all");
   const [submissionStatusFilter, setSubmissionStatusFilter] = useState("all");
   const [submissionSearch, setSubmissionSearch] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
-  const [studentViewMode, setStudentViewMode] = useState("roster"); // roster | matrix
+  const [studentViewMode, setStudentViewMode] = useState("roster");
   const [selectedStudentForModal, setSelectedStudentForModal] = useState(null);
 
   const [assigningId, setAssigningId] = useState(null);
@@ -94,14 +92,12 @@ export default function FacultyLaboratoryDetail() {
     };
   }, [normalizedId]);
 
-  // Handle Exercise Assignment
   const handleAssignExercise = async (ex) => {
     const exerciseIdentifier = ex.exercise_id || ex.id;
     setAssigningId(exerciseIdentifier);
     try {
       await assignFacultyExercise(exerciseIdentifier, normalizedId);
 
-      // Update local state immediately
       setExercises((prev) =>
         prev.map((item) =>
           item.id === exerciseIdentifier || item.exercise_id === exerciseIdentifier
@@ -110,7 +106,6 @@ export default function FacultyLaboratoryDetail() {
         )
       );
 
-      // Refresh lab overview stats
       setLab((prev) => (prev ? { ...prev, assigned_count: (prev.assigned_count || 1) + 1 } : prev));
 
       toast.success(`Exercise ${ex.exercise_number}: "${ex.title}" assigned successfully`);
@@ -122,7 +117,6 @@ export default function FacultyLaboratoryDetail() {
     }
   };
 
-  // Handle Syllabus PDF File Upload / Replacement
   const handleSyllabusFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -150,7 +144,6 @@ export default function FacultyLaboratoryDetail() {
     }
   };
 
-  // Handle New Announcement
   const handlePostAnnouncement = async (e) => {
     e.preventDefault();
     if (!annTitle.trim()) {
@@ -179,7 +172,6 @@ export default function FacultyLaboratoryDetail() {
   const assignedExercises = exercises.filter((ex) => ex.is_assigned || ex.isAssigned);
   const currentExercise = assignedExercises.length > 0 ? assignedExercises[assignedExercises.length - 1] : exercises[0];
 
-  // Submissions Filtering
   const filteredSubmissions = submissions.filter((sub) => {
     const matchesEx =
       submissionExerciseFilter === "all" ||
@@ -197,7 +189,6 @@ export default function FacultyLaboratoryDetail() {
     return matchesEx && matchesStatus && matchesQuery;
   });
 
-  // Students Filtering
   const filteredStudents = students.filter((stu) => {
     const q = studentSearch.toLowerCase();
     return (
@@ -207,7 +198,6 @@ export default function FacultyLaboratoryDetail() {
     );
   });
 
-  // Submissions Quick Stats Calculation
   const totalSubmissionsCount = submissions.length;
   const evaluatedCount = submissions.filter((s) => s.status === "Evaluated").length;
   const reviewedCount = submissions.filter((s) => s.status === "Reviewed").length;
@@ -225,7 +215,6 @@ export default function FacultyLaboratoryDetail() {
   return (
     <FacultyLayout profile={profile} announcements={announcements}>
       <div className="space-y-6">
-        {/* Hidden File Input for Syllabus Replacement */}
         <input
           ref={fileInputRef}
           type="file"
@@ -234,7 +223,6 @@ export default function FacultyLaboratoryDetail() {
           onChange={handleSyllabusFileChange}
         />
 
-        {/* Back Navigation */}
         <div>
           <Link
             to="/faculty/dashboard"
@@ -245,7 +233,6 @@ export default function FacultyLaboratoryDetail() {
           </Link>
         </div>
 
-        {/* Laboratory Header */}
         <div className="border border-slate-200/80 bg-white p-6 shadow-2xs">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -269,7 +256,6 @@ export default function FacultyLaboratoryDetail() {
               </div>
             </div>
 
-            {/* Syllabus Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
               <a
                 href={syllabusUrl}
@@ -295,7 +281,6 @@ export default function FacultyLaboratoryDetail() {
           </div>
         </div>
 
-        {/* Navigation Tabs Bar */}
         <div className="border-b border-slate-200 bg-white px-4">
           <nav className="flex space-x-6 overflow-x-auto">
             {tabs.map((tab) => (
@@ -314,10 +299,8 @@ export default function FacultyLaboratoryDetail() {
           </nav>
         </div>
 
-        {/* TAB 1: OVERVIEW */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            {/* Current Active Exercise Card */}
             <div className="border border-slate-200/80 bg-white p-6 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3.5">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
@@ -347,7 +330,6 @@ export default function FacultyLaboratoryDetail() {
               </div>
             </div>
 
-            {/* Operational Summary Metric Cards (Fully Operable) */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-[15px] font-bold text-slate-800">
@@ -355,9 +337,8 @@ export default function FacultyLaboratoryDetail() {
                 </h3>
                 <span className="text-[11px] text-slate-400 font-medium">Click any metric to inspect details</span>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {/* 1. Enrolled */}
                 <div
                   onClick={() => {
                     setActiveTab("students");
@@ -379,7 +360,6 @@ export default function FacultyLaboratoryDetail() {
                   <div className="mt-0.5 text-[11px] text-slate-400">Total Batch Students</div>
                 </div>
 
-                {/* 2. Submitted */}
                 <div
                   onClick={() => {
                     setActiveTab("submissions");
@@ -402,7 +382,6 @@ export default function FacultyLaboratoryDetail() {
                   <div className="mt-0.5 text-[11px] text-slate-400">Completed Code Runs</div>
                 </div>
 
-                {/* 3. Reviewed */}
                 <div
                   onClick={() => {
                     setActiveTab("submissions");
@@ -424,7 +403,6 @@ export default function FacultyLaboratoryDetail() {
                   <div className="mt-0.5 text-[11px] text-slate-400">Evaluated Submissions</div>
                 </div>
 
-                {/* 4. Pending Review */}
                 <div
                   onClick={() => {
                     setActiveTab("submissions");
@@ -448,7 +426,6 @@ export default function FacultyLaboratoryDetail() {
               </div>
             </div>
 
-            {/* Quick Actions Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 border border-slate-200/80 bg-white p-4 shadow-2xs">
               <span className="text-[13px] text-slate-600">
                 Manage curriculum assignment, review pending submissions, or replace the syllabus PDF.
@@ -471,7 +448,6 @@ export default function FacultyLaboratoryDetail() {
           </div>
         )}
 
-        {/* TAB 2: EXERCISES (CURRICULUM ASSIGNMENT) */}
         {activeTab === "exercises" && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/70 pb-3">
@@ -555,10 +531,8 @@ export default function FacultyLaboratoryDetail() {
           </div>
         )}
 
-        {/* TAB 3: SUBMISSIONS (DETAILED "WHO HAS DONE WHAT & WHO HASN'T") */}
         {activeTab === "submissions" && (
           <div className="space-y-4">
-            {/* Header and Filter Controls */}
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/70 pb-3">
               <div>
                 <h2 className="text-[18px] font-bold text-slate-800 tracking-tight">
@@ -569,9 +543,7 @@ export default function FacultyLaboratoryDetail() {
                 </p>
               </div>
 
-              {/* Filter Controls */}
               <div className="flex flex-wrap items-center gap-3">
-                {/* Exercise Selector */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-[12px] font-medium text-slate-500">Exercise:</span>
                   <select
@@ -588,7 +560,6 @@ export default function FacultyLaboratoryDetail() {
                   </select>
                 </div>
 
-                {/* Status Selector */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-[12px] font-medium text-slate-500">Status:</span>
                   <select
@@ -604,7 +575,6 @@ export default function FacultyLaboratoryDetail() {
                   </select>
                 </div>
 
-                {/* Search */}
                 <div className="relative w-52">
                   <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
                   <input
@@ -618,7 +588,6 @@ export default function FacultyLaboratoryDetail() {
               </div>
             </div>
 
-            {/* Quick Status Count Badges */}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               <button
                 onClick={() => setSubmissionStatusFilter("all")}
@@ -681,7 +650,6 @@ export default function FacultyLaboratoryDetail() {
               </button>
             </div>
 
-            {/* Submissions Table */}
             <div className="border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
               <table className="w-full text-left text-[13px]">
                 <thead className="bg-[#f8fafc] border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
@@ -752,7 +720,6 @@ export default function FacultyLaboratoryDetail() {
           </div>
         )}
 
-        {/* TAB 4: STUDENTS ROSTER & PROGRESS MATRIX */}
         {activeTab === "students" && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/70 pb-3">
@@ -766,7 +733,6 @@ export default function FacultyLaboratoryDetail() {
               </div>
 
               <div className="flex items-center gap-3">
-                {/* View Mode Toggle */}
                 <div className="flex border border-slate-200 bg-white p-0.5 text-[12px] font-medium">
                   <button
                     type="button"
@@ -792,7 +758,6 @@ export default function FacultyLaboratoryDetail() {
                   </button>
                 </div>
 
-                {/* Search Box */}
                 <div className="relative w-60">
                   <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
                   <input
@@ -807,7 +772,6 @@ export default function FacultyLaboratoryDetail() {
             </div>
 
             {studentViewMode === "roster" ? (
-              /* ROSTER LIST VIEW */
               <div className="border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
                 <table className="w-full text-left text-[13px]">
                   <thead className="bg-[#f8fafc] border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
@@ -853,7 +817,6 @@ export default function FacultyLaboratoryDetail() {
                 </table>
               </div>
             ) : (
-              /* FULL CLASS PROGRESS MATRIX VIEW ("WHO HAS DONE WHAT & WHO HASN'T") */
               <div className="border border-slate-200/80 bg-white shadow-2xs overflow-x-auto">
                 <table className="w-full text-left text-[12.5px]">
                   <thead className="bg-[#f8fafc] border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
@@ -924,7 +887,6 @@ export default function FacultyLaboratoryDetail() {
           </div>
         )}
 
-        {/* TAB 5: ANNOUNCEMENTS */}
         {activeTab === "announcements" && (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/70 pb-3">
@@ -947,7 +909,6 @@ export default function FacultyLaboratoryDetail() {
               </button>
             </div>
 
-            {/* Announcements List */}
             <div className="border border-slate-200/80 bg-white divide-y divide-slate-100 shadow-2xs">
               {announcements.length === 0 ? (
                 <div className="p-8 text-center text-[13px] text-slate-400">
@@ -977,7 +938,6 @@ export default function FacultyLaboratoryDetail() {
           </div>
         )}
 
-        {/* Modal 1: Student Detailed Assignment History Modal */}
         {selectedStudentForModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-2xs">
             <div className="w-full max-w-[650px] border border-slate-200 bg-white p-6 shadow-xl space-y-4">
@@ -1072,7 +1032,6 @@ export default function FacultyLaboratoryDetail() {
           </div>
         )}
 
-        {/* Modal 2: New Announcement */}
         {isAnnModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-2xs">
             <div className="w-full max-w-[500px] border border-slate-200 bg-white p-6 shadow-xl">

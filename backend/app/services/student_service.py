@@ -8,7 +8,6 @@ from app.core.security import hash_password, verify_password
 DEFAULT_STUDENT_EMAIL = os.getenv("DEFAULT_STUDENT_EMAIL", "student@fisat.ac.in")
 DEFAULT_STUDENT_PASS = os.getenv("DEFAULT_STUDENT_PASSWORD", "student123")
 
-
 DEFAULT_FALLBACK_STUDENT = {
     "_id": ObjectId("66b9f1a0e4b0a1b2c3d4e5f7"),
     "name": "ALLEN JOHN JOY",
@@ -22,7 +21,6 @@ DEFAULT_FALLBACK_STUDENT = {
     "onboarding_completed": True,
 }
 
-
 async def get_student_by_google_id(google_id: str):
     if not google_id:
         return None
@@ -30,7 +28,6 @@ async def get_student_by_google_id(google_id: str):
         return await db.students.find_one({"google_id": google_id})
     except Exception:
         return None
-
 
 async def get_student_by_email(email: str):
     if not email:
@@ -45,7 +42,6 @@ async def get_student_by_email(email: str):
         return DEFAULT_FALLBACK_STUDENT
     return None
 
-
 async def get_student_by_id(student_db_id: str):
     if not student_db_id:
         return None
@@ -57,7 +53,6 @@ async def get_student_by_id(student_db_id: str):
     except Exception as e:
         print(f"[Student] DB lookup by ID notice: {e}")
     return DEFAULT_FALLBACK_STUDENT
-
 
 async def create_student(data: dict):
     now = datetime.now(timezone.utc)
@@ -97,7 +92,6 @@ async def create_student(data: dict):
         student_doc["_id"] = ObjectId("66b9f1a0e4b0a1b2c3d4e5f7")
         return student_doc
 
-
 async def link_student_google_account(student_id: str, google_id: str, picture: str | None = None):
     now = datetime.now(timezone.utc)
     update_fields = {
@@ -121,7 +115,6 @@ async def link_student_google_account(student_id: str, google_id: str, picture: 
         print(f"[Auth] Error linking Google account for student {student_id}: {e}")
         return DEFAULT_FALLBACK_STUDENT
 
-
 async def verify_student_credentials(email: str, password: str):
     clean_email = email.lower().strip()
     student = await get_student_by_email(clean_email)
@@ -133,17 +126,14 @@ async def verify_student_credentials(email: str, password: str):
 
     return None
 
-
 async def get_all_students():
     cursor = db.students.find({})
     return await cursor.to_list(length=500)
-
 
 async def update_student_profile(student_id: str, profile_data: dict):
     now = datetime.now(timezone.utc)
     update_fields = {"updated_at": now}
 
-    # SECURITY ENFORCEMENT: Students can ONLY edit github_username.
     if "github_username" in profile_data:
         github_val = (profile_data["github_username"] or "").strip()
         update_fields["github_username"] = github_val
@@ -165,9 +155,7 @@ async def update_student_profile(student_id: str, profile_data: dict):
         print(f"[Student] Error updating profile for student {student_id}: {e}")
         raise
 
-
 async def get_student_assigned_laboratories():
-    """Retrieve laboratories for students with assigned exercises counts."""
     from app.services.faculty_service import DEFAULT_LABS, IN_MEMORY_EXERCISES
 
     all_labs = DEFAULT_LABS
@@ -207,14 +195,11 @@ async def get_student_assigned_laboratories():
         })
     return result
 
-
 async def get_student_assigned_exercises(course_id: str | None = None):
-    """Retrieve assigned exercises (is_assigned == True) visible to students."""
     from app.services.faculty_service import IN_MEMORY_EXERCISES
 
     cid = course_id.lower().strip() if course_id else None
 
-    # Try DB first
     try:
         query = {"is_assigned": True}
         if cid:
@@ -240,7 +225,6 @@ async def get_student_assigned_exercises(course_id: str | None = None):
     except Exception as e:
         print(f"[Student] DB exercises lookup notice: {e}")
 
-    # Fallback to IN_MEMORY_EXERCISES
     result = []
     for ex in IN_MEMORY_EXERCISES:
         if ex.get("is_assigned") and (not cid or ex.get("course_id") == cid):
@@ -257,7 +241,6 @@ async def get_student_assigned_exercises(course_id: str | None = None):
                 "dueDate": ex.get("due_date"),
             })
     return result
-
 
 async def init_default_student():
     try:

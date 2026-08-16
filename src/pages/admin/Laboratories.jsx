@@ -22,7 +22,6 @@ export default function Laboratories() {
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
 
-  // Reassign Modal State
   const [reassignModalOpen, setReassignModalOpen] = useState(false);
   const [selectedLab, setSelectedLab] = useState(null);
   const [targetFacultyEmail, setTargetFacultyEmail] = useState("");
@@ -115,7 +114,6 @@ export default function Laboratories() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -129,7 +127,6 @@ export default function Laboratories() {
           </div>
         </div>
 
-        {/* Role Boundary Notice */}
         <div className="flex items-start gap-3 border border-slate-200 bg-[#f0f4fa] p-4 text-[13px] text-slate-700">
           <Shield className="h-5 w-5 shrink-0 text-[#164a9c] mt-0.5" />
           <div className="leading-relaxed">
@@ -139,7 +136,6 @@ export default function Laboratories() {
           </div>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-4 text-[13px] border ${
@@ -165,7 +161,6 @@ export default function Laboratories() {
           </div>
         )}
 
-        {/* Laboratories Grid */}
         {loading && laboratories.length === 0 ? (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((n) => (
@@ -257,7 +252,6 @@ export default function Laboratories() {
           </div>
         )}
 
-        {/* REASSIGN MODAL */}
         {reassignModalOpen && selectedLab && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
             <div className="w-full max-w-md border border-slate-200 bg-white p-6 shadow-xl">

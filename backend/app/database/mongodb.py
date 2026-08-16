@@ -11,7 +11,6 @@ client = AsyncMongoClient(
 )
 db = client[settings.MONGODB_DB]
 
-
 async def check_database_connection():
     try:
         await client.admin.command("ping")

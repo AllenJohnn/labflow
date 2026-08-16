@@ -13,7 +13,6 @@ export default function FacultyLaboratoryCard({ lab }) {
       className="group flex h-full flex-col justify-between border border-slate-200/80 border-t-2 border-t-[#164a9c] bg-white p-5 shadow-2xs transition-all duration-150 hover:border-[#164a9c]/60 hover:bg-slate-50/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#164a9c]"
     >
       <div>
-        {/* Course Code Badge & Semester */}
         <div className="flex items-center justify-between">
           <span className="inline-block bg-[#f0f4fa] px-2.5 py-0.5 text-[11px] font-bold text-[#164a9c] tracking-wider uppercase border border-[#164a9c]/15">
             {code || labId.toUpperCase()}
@@ -23,12 +22,10 @@ export default function FacultyLaboratoryCard({ lab }) {
           </span>
         </div>
 
-        {/* Course Name */}
         <h3 className="mt-3.5 text-[16.5px] font-semibold tracking-tight text-slate-800 leading-snug group-hover:text-[#164a9c] transition-colors">
           {name}
         </h3>
 
-        {/* Context Stats: Enrolled Students & Assigned Exercises */}
         <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
           <div className="flex items-center gap-1.5 text-[12.5px] text-slate-600">
             <Users className="h-3.5 w-3.5 text-slate-400 shrink-0" />
@@ -41,7 +38,6 @@ export default function FacultyLaboratoryCard({ lab }) {
         </div>
       </div>
 
-      {/* Action Footer */}
       <div className="mt-5 border-t border-slate-100 pt-3">
         <div className="flex items-center justify-between text-[12.5px] font-medium text-[#164a9c]">
           <span>Open Laboratory</span>

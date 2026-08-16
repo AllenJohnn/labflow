@@ -61,7 +61,6 @@ export default function AuditLog() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -75,7 +74,6 @@ export default function AuditLog() {
           </div>
         </div>
 
-        {/* Toolbar & Filters */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border border-slate-200/80 bg-white p-4 shadow-xs">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -106,7 +104,6 @@ export default function AuditLog() {
           </div>
         </div>
 
-        {/* Audit Log Table */}
         <div className="overflow-x-auto border border-slate-200/80 bg-white shadow-xs">
           <table className="w-full border-collapse text-left text-[13px]">
             <thead>

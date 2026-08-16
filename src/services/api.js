@@ -22,7 +22,6 @@ api.interceptors.response.use(
       (error.response?.data?.status === "maintenance" || error.response?.data?.maintenance_mode)
     ) {
       const currentPath = window.location.pathname;
-      // Do not redirect admin routes to maintenance page (admins manage the system)
       if (!currentPath.startsWith("/admin") && currentPath !== "/maintenance") {
         sessionStorage.setItem(
           "labflow_maintenance",

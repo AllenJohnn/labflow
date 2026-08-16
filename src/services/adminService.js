@@ -1,13 +1,8 @@
 import api from "./api";
 
-// Cached memory objects for instant UI transitions
 let cachedAdminProfile = null;
 let cachedAdminStats = null;
 let cachedAcademicClasses = null;
-
-// =========================================================================
-// PROFILE & DASHBOARD STATS
-// =========================================================================
 
 export const getAdminProfile = async () => {
   const res = await api.get("/admin/me");
@@ -25,10 +20,6 @@ export const getAdminStats = async () => {
 
 export const getCachedAdminStats = () => cachedAdminStats;
 
-// =========================================================================
-// ACADEMIC CLASSES & PROGRAM SECTIONS
-// =========================================================================
-
 export const getAcademicClasses = async () => {
   const res = await api.get("/admin/classes");
   cachedAcademicClasses = res.data.data;
@@ -41,10 +32,6 @@ export const getClassDetails = async (program, semester) => {
   const res = await api.get(`/admin/classes/${encodeURIComponent(program)}/${encodeURIComponent(semester)}`);
   return res.data.data;
 };
-
-// =========================================================================
-// STUDENT MANAGEMENT
-// =========================================================================
 
 export const getStudents = async (params = {}) => {
   const res = await api.get("/admin/students", { params });
@@ -71,10 +58,6 @@ export const toggleStudentStatus = async (studentId, isActive) => {
   return res.data.data;
 };
 
-// =========================================================================
-// FACULTY MANAGEMENT & ALLOCATION
-// =========================================================================
-
 export const getFaculty = async () => {
   const res = await api.get("/admin/faculty");
   return res.data.data;
@@ -98,10 +81,6 @@ export const assignFacultyToCourse = async (courseId, targetFacultyId) => {
   return res.data;
 };
 
-// =========================================================================
-// LABORATORY / COURSE MANAGEMENT
-// =========================================================================
-
 export const getLaboratories = async () => {
   const res = await api.get("/admin/laboratories");
   return res.data.data;
@@ -111,10 +90,6 @@ export const updateLaboratory = async (courseId, payload) => {
   const res = await api.put(`/admin/laboratories/${encodeURIComponent(courseId)}`, payload);
   return res.data.data;
 };
-
-// =========================================================================
-// ENROLLMENT MANAGEMENT
-// =========================================================================
 
 export const getEnrollments = async (program = "MCA", semester = "S3") => {
   const res = await api.get("/admin/enrollments", {
@@ -129,10 +104,6 @@ export const updateEnrollment = async (studentId, enrolledCourses) => {
   });
   return res.data.data;
 };
-
-// =========================================================================
-// INSTITUTIONAL ANNOUNCEMENTS
-// =========================================================================
 
 export const getAnnouncements = async () => {
   const res = await api.get("/admin/announcements");
@@ -149,18 +120,10 @@ export const deleteAnnouncement = async (announcementId) => {
   return res.data.data;
 };
 
-// =========================================================================
-// AUDIT LOG
-// =========================================================================
-
 export const getAuditLogs = async (params = {}) => {
   const res = await api.get("/admin/audit", { params });
   return res.data.data;
 };
-
-// =========================================================================
-// SYSTEM SETTINGS & MAINTENANCE MODE
-// =========================================================================
 
 export const getSystemSettings = async () => {
   const res = await api.get("/admin/settings");

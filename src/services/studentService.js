@@ -6,7 +6,6 @@ let cachedAnnouncements = null;
 let cachedActivity = null;
 
 const ALL_EXERCISES = [
-  // NSA (Linux Utilities & Administration)
   {
     id: "nsa-ex1",
     courseId: "nsa",
@@ -51,7 +50,6 @@ const ALL_EXERCISES = [
     status: "Not Started",
     dueDate: null,
   },
-  // ADBMS (20MCA134 Advanced DBMS Lab)
   {
     id: "adbms-ex1",
     courseId: "adbms",
@@ -96,7 +94,6 @@ const ALL_EXERCISES = [
     status: "Not Started",
     dueDate: null,
   },
-  // JAVA (20MCA132 Object Oriented Programming Lab)
   {
     id: "java-ex1",
     courseId: "java",
@@ -230,7 +227,6 @@ export const updateStudentProfile = async (profileData) => {
   return cachedProfile;
 };
 
-
 export const getStudentLaboratories = async () => {
   try {
     const res = await api.get("/student/laboratories");
@@ -238,8 +234,8 @@ export const getStudentLaboratories = async () => {
       cachedLabs = res.data.data;
       return cachedLabs;
     }
-  } catch {
-    // Graceful fallback to cached/default
+  } catch (err) {
+    void err;
   }
   if (cachedLabs) {
     return cachedLabs;
@@ -289,8 +285,8 @@ export const getAssignedExercisesByCourse = async (courseId) => {
     if (res.data && res.data.data) {
       return res.data.data;
     }
-  } catch {
-    // fallback
+  } catch (err) {
+    void err;
   }
   return ALL_EXERCISES.filter(
     (ex) => ex.courseId.toLowerCase() === normalizedId && ex.isAssigned
@@ -303,8 +299,8 @@ export const getAllAssignedExercises = async () => {
     if (res.data && res.data.data) {
       return res.data.data;
     }
-  } catch {
-    // fallback
+  } catch (err) {
+    void err;
   }
   return ALL_EXERCISES.filter((ex) => ex.isAssigned);
 };
@@ -386,7 +382,6 @@ export const recordLabEntryAttendance = async (courseId) => {
     const res = await api.post(`/student/laboratories/${courseId}/enter`);
     return res.data;
   } catch (err) {
-    // Non-blocking log
     console.log(`[Attendance] Lab entry check notice for ${courseId}:`, err.response?.data?.detail || err.message);
     return null;
   }
@@ -401,6 +396,3 @@ export const checkInStudentAttendance = async (courseId = null) => {
     throw err;
   }
 };
-
-
-

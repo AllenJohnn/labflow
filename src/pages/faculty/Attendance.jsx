@@ -23,8 +23,7 @@ export default function FacultyAttendance() {
   const [overview, setOverview] = useState(null);
   const [selectedCourseId, setSelectedCourseId] = useState("nsa");
   const [selectedDate, setSelectedDate] = useState("2026-08-15");
-  
-  // Session Roster State
+
   const [sessionData, setSessionData] = useState(null);
   const [loadingSession, setLoadingSession] = useState(false);
   const [search, setSearch] = useState("");
@@ -32,13 +31,11 @@ export default function FacultyAttendance() {
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
   const [updatingStudentId, setUpdatingStudentId] = useState(null);
 
-  // Batch Confirmation Modal
   const [batchConfirmModal, setBatchConfirmModal] = useState({
     isOpen: false,
     statusToApply: "Present",
   });
 
-  // Student History Modal
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [selectedStudentForHistory, setSelectedStudentForHistory] = useState(null);
 
@@ -105,7 +102,6 @@ export default function FacultyAttendance() {
     setUpdatingStudentId(studentId);
     try {
       await updateStudentAttendance(selectedCourseId, studentId, selectedDate, newStatus);
-      // Optimistic local update
       if (sessionData?.students) {
         const updated = sessionData.students.map((s) => {
           if (s.student_id === studentId) {
@@ -176,7 +172,6 @@ export default function FacultyAttendance() {
   return (
     <FacultyLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-5">
           <div>
             <div className="flex items-center gap-2">
@@ -192,7 +187,6 @@ export default function FacultyAttendance() {
             </p>
           </div>
 
-          {/* Course Selector Tabs */}
           <div className="flex items-center gap-2">
             {overview?.assigned_labs?.map((lab) => (
               <button
@@ -210,7 +204,6 @@ export default function FacultyAttendance() {
           </div>
         </div>
 
-        {/* Status Toast */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between rounded-lg border p-4 text-[13px] ${
@@ -236,7 +229,6 @@ export default function FacultyAttendance() {
           </div>
         )}
 
-        {/* Course Analytics Metrics Cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
@@ -307,10 +299,8 @@ export default function FacultyAttendance() {
           </div>
         </div>
 
-        {/* Session Selector & Batch Action Bar */}
         <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            {/* Date Picker / Session Selection */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4 text-[#164a9c]" />
@@ -335,7 +325,6 @@ export default function FacultyAttendance() {
               </span>
             </div>
 
-            {/* Quick Batch Actions with Confirmation Safeguards */}
             <div className="flex items-center gap-2">
               <span className="text-[12px] font-medium text-slate-400 mr-1">Batch Actions:</span>
               <button
@@ -353,7 +342,6 @@ export default function FacultyAttendance() {
             </div>
           </div>
 
-          {/* Search & Filter Subbar */}
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-slate-100 pt-4">
             <div className="relative max-w-sm flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -385,7 +373,6 @@ export default function FacultyAttendance() {
           </div>
         </div>
 
-        {/* Student Attendance Roster Table */}
         <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <h2 className="text-[15px] font-bold text-slate-900 font-brand">
@@ -537,7 +524,6 @@ export default function FacultyAttendance() {
           </div>
         </div>
 
-        {/* Batch Action Confirmation Modal */}
         {batchConfirmModal.isOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
             <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl border border-slate-200">
@@ -595,7 +581,6 @@ export default function FacultyAttendance() {
           </div>
         )}
 
-        {/* Student Multi-Week History Modal */}
         {historyModalOpen && selectedStudentForHistory && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-xs">
             <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-2xl border border-slate-200">

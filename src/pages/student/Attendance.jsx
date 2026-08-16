@@ -17,12 +17,11 @@ export default function StudentAttendance() {
   const [data, setData] = useState(null);
   const [checkingIn, setCheckingIn] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
-  const [activeTab, setActiveTab] = useState("calendar"); // "calendar" | "timetable"
+  const [activeTab, setActiveTab] = useState("calendar");
   const [selectedDateSessions, setSelectedDateSessions] = useState([]);
   const [selectedDateStr, setSelectedDateStr] = useState("2026-08-15");
 
-  // Month Calendar Navigation (Default August 2026)
-  const currentMonth = new Date(2026, 7, 1); // August 2026
+  const currentMonth = new Date(2026, 7, 1);
 
   useEffect(() => {
     let isMounted = true;
@@ -68,10 +67,9 @@ export default function StudentAttendance() {
     }
   };
 
-  // Calendar generation helpers
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
-  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sunday
+  const firstDayIndex = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const calendarDays = [];
@@ -131,7 +129,6 @@ export default function StudentAttendance() {
   return (
     <StudentLayout>
       <div className="space-y-6">
-        {/* Page Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-5">
           <div>
             <div className="flex items-center gap-2">
@@ -163,7 +160,6 @@ export default function StudentAttendance() {
           </div>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between rounded-lg border p-4 text-[13px] ${
@@ -189,9 +185,7 @@ export default function StudentAttendance() {
           </div>
         )}
 
-        {/* Primary Attendance Metrics Grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Card 1: Overall Percentage */}
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-[12px] font-medium uppercase tracking-wider">Overall Attendance</span>
@@ -218,7 +212,6 @@ export default function StudentAttendance() {
             </p>
           </div>
 
-          {/* Card 2: Total Sessions */}
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-[12px] font-medium uppercase tracking-wider">Sessions Attended</span>
@@ -240,7 +233,6 @@ export default function StudentAttendance() {
             </div>
           </div>
 
-          {/* Card 3: Next Scheduled Class */}
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-[12px] font-medium uppercase tracking-wider">Next Lab Class</span>
@@ -263,7 +255,6 @@ export default function StudentAttendance() {
             </p>
           </div>
 
-          {/* Card 4: Verification Status */}
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-[12px] font-medium uppercase tracking-wider">Authentication Log</span>
@@ -284,7 +275,6 @@ export default function StudentAttendance() {
           </div>
         </div>
 
-        {/* Course-Wise Attendance Breakdown */}
         <div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-xs">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
@@ -348,7 +338,6 @@ export default function StudentAttendance() {
           </div>
         </div>
 
-        {/* Tab Navigation: Calendar View vs Weekly Timetable */}
         <div className="flex items-center gap-3 border-b border-slate-200">
           <button
             onClick={() => setActiveTab("calendar")}
@@ -374,10 +363,8 @@ export default function StudentAttendance() {
           </button>
         </div>
 
-        {/* TAB 1: Monthly Attendance Calendar & Multi-Session Inspector */}
         {activeTab === "calendar" && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            {/* Calendar Grid (8 cols) */}
             <div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-xs lg:col-span-8">
               <div className="flex items-center justify-between pb-4">
                 <div className="flex items-center gap-2">
@@ -389,7 +376,6 @@ export default function StudentAttendance() {
                 <span className="text-[12px] text-slate-400">MCA S3 Lab Schedule</span>
               </div>
 
-              {/* Weekday Header */}
               <div className="grid grid-cols-7 gap-1 border-b border-slate-100 pb-2 text-center text-[12px] font-bold text-slate-400 uppercase">
                 <div>Sun</div>
                 <div>Mon</div>
@@ -400,7 +386,6 @@ export default function StudentAttendance() {
                 <div>Sat</div>
               </div>
 
-              {/* Days Grid */}
               <div className="mt-2 grid grid-cols-7 gap-1.5">
                 {calendarDays.map((dayNum, idx) => {
                   if (!dayNum) {
@@ -462,7 +447,6 @@ export default function StudentAttendance() {
                 })}
               </div>
 
-              {/* Legend */}
               <div className="mt-5 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-4 text-[12px] text-slate-600">
                 <div className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
@@ -483,9 +467,7 @@ export default function StudentAttendance() {
               </div>
             </div>
 
-            {/* Session Detail Card & Next Classes (4 cols) */}
             <div className="space-y-6 lg:col-span-4">
-              {/* Selected Day Inspector (Multi-Session Support) */}
               <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
@@ -535,7 +517,6 @@ export default function StudentAttendance() {
                 )}
               </div>
 
-              {/* Upcoming Classes List */}
               <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
                 <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-[#159447]" />
@@ -572,7 +553,6 @@ export default function StudentAttendance() {
           </div>
         )}
 
-        {/* TAB 2: Weekly Academic Timetable */}
         {activeTab === "timetable" && (
           <div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-xs">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">

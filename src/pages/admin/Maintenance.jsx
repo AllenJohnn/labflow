@@ -77,7 +77,6 @@ export default function Maintenance() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -91,7 +90,6 @@ export default function Maintenance() {
           </div>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-3.5 text-[13px] border ${
@@ -117,7 +115,6 @@ export default function Maintenance() {
           </div>
         )}
 
-        {/* Live System Status Cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between">
@@ -183,14 +180,12 @@ export default function Maintenance() {
           </div>
         </div>
 
-        {/* Maintenance Mode Controller Form */}
         <div className="border border-slate-200/80 bg-white p-6 shadow-xs">
           <h2 className="text-[16px] font-bold text-slate-800 border-b border-slate-100 pb-3">
             Configure Maintenance Mode
           </h2>
 
           <form onSubmit={handleApplyMaintenance} className="mt-5 space-y-5">
-            {/* Toggle Switch */}
             <div className="flex items-center justify-between border border-slate-100 bg-[#f8fafc] p-4">
               <div>
                 <span className="text-[14px] font-bold text-slate-800 block">
@@ -217,7 +212,6 @@ export default function Maintenance() {
               </button>
             </div>
 
-            {/* Custom Maintenance Message */}
             <div>
               <label className="block text-[11px] font-semibold uppercase text-slate-500">
                 Maintenance Notice Message
@@ -232,7 +226,6 @@ export default function Maintenance() {
               />
             </div>
 
-            {/* Expected Return Time */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-[11px] font-semibold uppercase text-slate-500">
@@ -254,7 +247,6 @@ export default function Maintenance() {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
               <button
                 type="submit"

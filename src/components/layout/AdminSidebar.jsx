@@ -94,7 +94,6 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }) {
   const sidebarContent = (
     <div className="flex h-full flex-col justify-between bg-white border-r border-slate-200/80 py-5 px-3">
       <div className="space-y-4 overflow-y-auto">
-        {/* Mobile Close Button */}
         <div className="flex items-center justify-between lg:hidden pb-3 border-b border-slate-100 px-2">
           <span className="font-brand text-[14px] font-semibold text-[#164a9c]">Admin Navigation</span>
           <button
@@ -106,7 +105,6 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }) {
           </button>
         </div>
 
-        {/* Navigation Sections */}
         {navSections.map((section, sIdx) => (
           <nav key={sIdx} className="space-y-0.5">
             {section.label && (
@@ -138,7 +136,6 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }) {
         ))}
       </div>
 
-      {/* Account Section */}
       <div className="space-y-1 border-t border-slate-100 pt-4">
         <div className="px-3 pb-1.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
           Session
@@ -160,12 +157,10 @@ export default function AdminSidebar({ mobileOpen, setMobileOpen }) {
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <aside className="hidden w-56 shrink-0 lg:block">
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden flex">
           <div

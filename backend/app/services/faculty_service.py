@@ -8,7 +8,6 @@ from app.core.security import hash_password, verify_password
 DEFAULT_FACULTY_EMAIL = os.getenv("DEFAULT_FACULTY_EMAIL", "faculty@fisat.ac.in")
 DEFAULT_FACULTY_PASS = os.getenv("DEFAULT_FACULTY_PASSWORD", "faculty123")
 
-# Default Lab Seed Definitions
 DEFAULT_LABS = [
     {
         "course_id": "nsa",
@@ -46,7 +45,6 @@ DEFAULT_LABS = [
 ]
 
 DEFAULT_EXERCISES = [
-    # NSA (Linux Utilities & Administration)
     {
         "exercise_id": "nsa-ex1",
         "course_id": "nsa",
@@ -91,7 +89,6 @@ DEFAULT_EXERCISES = [
         "assigned_date": None,
         "due_date": None,
     },
-    # ADBMS (20MCA134 Advanced DBMS Lab)
     {
         "exercise_id": "adbms-ex1",
         "course_id": "adbms",
@@ -136,7 +133,6 @@ DEFAULT_EXERCISES = [
         "assigned_date": None,
         "due_date": None,
     },
-    # JAVA (20MCA132 Object Oriented Programming Lab)
     {
         "exercise_id": "java-ex1",
         "course_id": "java",
@@ -268,7 +264,6 @@ DEMO_STUDENTS = [
     {"name": "V S HIBA", "student_id": "FIT25MCA-2060", "email": "hiba.vs@fisat.ac.in"},
 ]
 
-
 DEFAULT_FALLBACK_FACULTY = {
     "_id": ObjectId("66b9f1a0e4b0a1b2c3d4e5f6"),
     "name": "Rakhi",
@@ -281,7 +276,6 @@ DEFAULT_FALLBACK_FACULTY = {
     "password_hash": hash_password(DEFAULT_FACULTY_PASS),
     "onboarding_completed": True,
 }
-
 
 async def get_faculty_by_email(email: str):
     if not email:
@@ -296,7 +290,6 @@ async def get_faculty_by_email(email: str):
         return DEFAULT_FALLBACK_FACULTY
     return None
 
-
 async def get_faculty_by_id(faculty_id: str):
     if not faculty_id:
         return None
@@ -309,7 +302,6 @@ async def get_faculty_by_id(faculty_id: str):
         print(f"[Faculty] DB lookup by ID notice: {e}")
     return DEFAULT_FALLBACK_FACULTY
 
-
 async def get_faculty_by_google_id(google_id: str):
     if not google_id:
         return None
@@ -317,7 +309,6 @@ async def get_faculty_by_google_id(google_id: str):
         return await db.faculty.find_one({"google_id": google_id})
     except Exception:
         return None
-
 
 async def create_faculty(data: dict):
     password_hash = None
@@ -354,7 +345,6 @@ async def create_faculty(data: dict):
         doc["_id"] = ObjectId("66b9f1a0e4b0a1b2c3d4e5f6")
         return doc
 
-
 async def verify_faculty_credentials(email: str, password: str):
     clean_email = email.lower().strip()
     faculty = await get_faculty_by_email(clean_email)
@@ -368,7 +358,6 @@ async def verify_faculty_credentials(email: str, password: str):
 
     return None
 
-
 IN_MEMORY_EXERCISES = [dict(e) for e in DEFAULT_EXERCISES]
 IN_MEMORY_ANNOUNCEMENTS = [
     {
@@ -381,7 +370,6 @@ IN_MEMORY_ANNOUNCEMENTS = [
         "created_at": datetime.now(timezone.utc).isoformat()
     }
 ]
-
 
 async def update_faculty_profile(faculty_id: str, update_fields: dict):
     update_fields["updated_at"] = datetime.now(timezone.utc)
@@ -400,20 +388,16 @@ async def update_faculty_profile(faculty_id: str, update_fields: dict):
         print(f"[Faculty] Error updating profile for faculty {faculty_id}: {e}")
         return DEFAULT_FALLBACK_FACULTY
 
-
 async def is_faculty_authorized_for_course(faculty_doc: dict, course_id: str) -> bool:
-    """Validate if faculty owns or is assigned to manage this course."""
     if not faculty_doc or not course_id:
         return False
 
     cid = course_id.lower().strip()
     faculty_email = (faculty_doc.get("email") or "").lower().strip()
 
-    # Admin role has full access
     if faculty_doc.get("role") == "admin":
         return True
 
-    # 1. Check MongoDB database if available
     try:
         db_fac = await db.faculty.find_one({"email": faculty_email})
         if db_fac:
@@ -422,7 +406,6 @@ async def is_faculty_authorized_for_course(faculty_doc: dict, course_id: str) ->
     except Exception:
         pass
 
-    # 2. Check in-memory DEFAULT_FACULTY_ROSTER
     try:
         from app.services.admin_service import DEFAULT_FACULTY_ROSTER
         fac_record = next((f for f in DEFAULT_FACULTY_ROSTER if f["email"].lower() == faculty_email), None)
@@ -432,13 +415,10 @@ async def is_faculty_authorized_for_course(faculty_doc: dict, course_id: str) ->
     except Exception:
         pass
 
-    # 3. Fallback to passed faculty_doc assigned_labs
     assigned_labs = [str(x).lower().strip() for x in faculty_doc.get("assigned_labs", [])]
     return cid in assigned_labs
 
-
 async def get_faculty_assigned_laboratories(faculty_doc: dict):
-    """Retrieve only the laboratories assigned to this authenticated faculty member."""
     all_labs = DEFAULT_LABS
     try:
         cursor = db.laboratories.find({})
@@ -483,9 +463,7 @@ async def get_faculty_assigned_laboratories(faculty_doc: dict):
 
     return assigned
 
-
 async def get_faculty_laboratory_detail(faculty_doc: dict, course_id: str):
-    """Retrieve operational details for a specific laboratory."""
     cid = course_id.lower().strip()
     if not await is_faculty_authorized_for_course(faculty_doc, cid):
         return None
@@ -498,7 +476,6 @@ async def get_faculty_laboratory_detail(faculty_doc: dict, course_id: str):
     except Exception:
         pass
 
-    # Get exercises (DB or in-memory)
     course_exercises = []
     try:
         cursor = db.exercises.find({"course_id": cid}).sort("exercise_number", 1)
@@ -545,9 +522,7 @@ async def get_faculty_laboratory_detail(faculty_doc: dict, course_id: str):
         }
     }
 
-
 async def get_faculty_exercises(faculty_doc: dict, course_id: str):
-    """Retrieve all exercises (assigned and unassigned) for faculty view."""
     cid = course_id.lower().strip()
     if not await is_faculty_authorized_for_course(faculty_doc, cid):
         return None
@@ -569,9 +544,7 @@ async def get_faculty_exercises(faculty_doc: dict, course_id: str):
         ex["id"] = ex.get("exercise_id", "ex-1")
     return exercises
 
-
 async def assign_exercise(faculty_doc: dict, exercise_id: str):
-    """Set is_assigned to True for an exercise, making it live for students."""
     target_ex = None
     try:
         target_ex = await db.exercises.find_one({"exercise_id": exercise_id})
@@ -590,14 +563,12 @@ async def assign_exercise(faculty_doc: dict, exercise_id: str):
 
     now_iso = datetime.now(timezone.utc).isoformat()
 
-    # Update in-memory
     mem_ex = next((e for e in IN_MEMORY_EXERCISES if e.get("exercise_id") == exercise_id or e.get("id") == exercise_id), None)
     if mem_ex:
         mem_ex["is_assigned"] = True
         mem_ex["assigned_date"] = now_iso
         mem_ex["status"] = "Assigned"
 
-    # Update in MongoDB
     try:
         await db.exercises.update_one(
             {"exercise_id": exercise_id},
@@ -619,9 +590,7 @@ async def assign_exercise(faculty_doc: dict, exercise_id: str):
         "status": "Assigned"
     }
 
-
 async def get_faculty_submissions(faculty_doc: dict, course_id: str, exercise_id: str | None = None):
-    """Retrieve student submissions for a laboratory across the 60-student MCA S3 cohort."""
     cid = course_id.lower().strip()
     if not await is_faculty_authorized_for_course(faculty_doc, cid):
         return None
@@ -635,7 +604,6 @@ async def get_faculty_submissions(faculty_doc: dict, course_id: str, exercise_id
 
     submissions = []
     for i, s in enumerate(DEMO_STUDENTS):
-        # Realistic distribution across 60 students
         if ex_num == "01":
             is_done = i < 48
             status_val = "Evaluated" if i % 3 == 0 else ("Reviewed" if i % 3 == 1 else "Submitted") if is_done else "Not Submitted"
@@ -668,9 +636,7 @@ async def get_faculty_submissions(faculty_doc: dict, course_id: str, exercise_id
         })
     return submissions
 
-
 async def get_faculty_students(faculty_doc: dict, course_id: str):
-    """Retrieve enrolled students roster for a course with detailed exercise completion breakdown."""
     cid = course_id.lower().strip()
     if not await is_faculty_authorized_for_course(faculty_doc, cid):
         return None
@@ -681,7 +647,6 @@ async def get_faculty_students(faculty_doc: dict, course_id: str):
 
     roster = []
     for idx, s in enumerate(DEMO_STUDENTS):
-        # Per-exercise breakdown for each student
         ex_progress = []
         completed_count = 0
         for ex in course_exercises:
@@ -731,9 +696,7 @@ async def get_faculty_students(faculty_doc: dict, course_id: str):
         })
     return roster
 
-
 async def update_faculty_syllabus(faculty_doc: dict, course_id: str, file):
-    """Save an uploaded syllabus PDF to public/syllabi and update laboratory settings."""
     cid = course_id.lower().strip()
     if not await is_faculty_authorized_for_course(faculty_doc, cid):
         return None
@@ -750,12 +713,10 @@ async def update_faculty_syllabus(faculty_doc: dict, course_id: str, file):
 
     syllabus_url = f"/syllabi/{filename}"
 
-    # Update in-memory DEFAULT_LABS
     for lab in DEFAULT_LABS:
         if lab["course_id"] == cid:
             lab["syllabus_url"] = syllabus_url
 
-    # Update MongoDB if available
     try:
         await db.laboratories.update_one(
             {"course_id": cid},
@@ -771,16 +732,12 @@ async def update_faculty_syllabus(faculty_doc: dict, course_id: str, file):
         "filename": filename
     }
 
-
 async def get_faculty_announcements(faculty_doc: dict, course_id: str):
-    """Retrieve announcements for a course."""
     cid = course_id.lower().strip()
     announcements = [a for a in IN_MEMORY_ANNOUNCEMENTS if a.get("course_id") in [cid, "all"]]
     return announcements
 
-
 async def create_faculty_announcement(faculty_doc: dict, course_id: str, data: dict):
-    """Create a new announcement for a course."""
     cid = course_id.lower().strip()
     if not await is_faculty_authorized_for_course(faculty_doc, cid):
         return None
@@ -804,7 +761,6 @@ async def create_faculty_announcement(faculty_doc: dict, course_id: str, data: d
         pass
 
     return doc
-
 
 async def init_default_faculty():
     try:
@@ -838,9 +794,7 @@ async def init_default_faculty():
     except Exception as e:
         print(f"[Database] Default faculty initialization notice: {e}")
 
-
 async def init_default_lab_data():
-    """Seed laboratories, exercises, and 60 MCA S3 student dev seed records in MongoDB."""
     try:
         for lab in DEFAULT_LABS:
             existing = await db.laboratories.find_one({"course_id": lab["course_id"]})
@@ -854,7 +808,6 @@ async def init_default_lab_data():
                 await db.exercises.insert_one(dict(ex))
                 print(f"[Database] Seeded exercise: {ex['exercise_id']}")
 
-        # Seed all 60 MCA S3 dev seed student records
         for stu in DEMO_STUDENTS:
             existing_stu = await db.students.find_one({"student_id": stu["student_id"]})
             if not existing_stu:
@@ -878,6 +831,3 @@ async def init_default_lab_data():
         print("[Database] Default laboratory, exercise, and 60 student dev seed datasets verified.")
     except Exception as e:
         print(f"[Database] Lab dataset initialization notice: {e}")
-
-
-

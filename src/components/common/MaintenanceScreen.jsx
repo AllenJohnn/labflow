@@ -10,7 +10,6 @@ export default function MaintenanceScreen({
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f4f8fa] p-4 text-slate-700">
       <div className="w-full max-w-lg border border-slate-200/90 bg-white p-8 shadow-xs text-center">
-        {/* Header Branding */}
         <div className="flex items-center justify-center gap-3">
           <img src={fisatLogo} alt="FISAT" className="h-11 w-auto object-contain" />
           <div className="text-left leading-tight">
@@ -28,13 +27,11 @@ export default function MaintenanceScreen({
           </div>
         </div>
 
-        {/* Maintenance Badge */}
         <div className="mt-8 inline-flex items-center gap-2 border border-amber-200 bg-amber-50 px-3.5 py-1 text-[12px] font-semibold text-amber-800">
           <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
           <span>System Maintenance Active</span>
         </div>
 
-        {/* Title & Description */}
         <h1 className="mt-4 text-[22px] font-bold text-slate-800 tracking-tight">
           Maintenance in Progress
         </h1>
@@ -53,7 +50,6 @@ export default function MaintenanceScreen({
           </div>
         )}
 
-        {/* Actions */}
         <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
           <button
             type="button"

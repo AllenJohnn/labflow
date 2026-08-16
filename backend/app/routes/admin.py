@@ -4,11 +4,6 @@ from app.services import admin_service
 
 router = APIRouter()
 
-
-# =========================================================================
-# PROFILE & DASHBOARD STATS
-# =========================================================================
-
 @router.get("/me")
 async def get_my_admin_profile(current_admin: dict = Depends(get_current_admin)):
     user_data = dict(current_admin)
@@ -19,7 +14,6 @@ async def get_my_admin_profile(current_admin: dict = Depends(get_current_admin))
         "data": user_data
     }
 
-
 @router.get("/stats")
 async def get_admin_dashboard_stats(current_admin: dict = Depends(get_current_admin)):
     metrics = await admin_service.get_admin_dashboard_metrics()
@@ -28,11 +22,6 @@ async def get_admin_dashboard_stats(current_admin: dict = Depends(get_current_ad
         "data": metrics
     }
 
-
-# =========================================================================
-# ACADEMIC CLASSES & PROGRAM SECTIONS
-# =========================================================================
-
 @router.get("/classes")
 async def get_all_academic_classes(current_admin: dict = Depends(get_current_admin)):
     classes_data = await admin_service.get_academic_classes()
@@ -40,7 +29,6 @@ async def get_all_academic_classes(current_admin: dict = Depends(get_current_adm
         "status": "success",
         "data": classes_data
     }
-
 
 @router.get("/classes/{program}/{semester}")
 async def get_academic_class_detail(
@@ -53,11 +41,6 @@ async def get_academic_class_detail(
         "status": "success",
         "data": details
     }
-
-
-# =========================================================================
-# STUDENT MANAGEMENT
-# =========================================================================
 
 @router.get("/students")
 async def get_students_list(
@@ -75,7 +58,6 @@ async def get_students_list(
         "data": res
     }
 
-
 @router.get("/students/{student_id}")
 async def get_student_detail(
     student_id: str,
@@ -91,7 +73,6 @@ async def get_student_detail(
         "status": "success",
         "data": student
     }
-
 
 @router.put("/students/{student_id}")
 async def update_student(
@@ -112,7 +93,6 @@ async def update_student(
         "data": updated
     }
 
-
 @router.post("/students")
 async def create_student(
     payload: dict,
@@ -131,7 +111,6 @@ async def create_student(
         "data": created
     }
 
-
 @router.patch("/students/{student_id}/status")
 async def toggle_student_account_status(
     student_id: str,
@@ -146,11 +125,6 @@ async def toggle_student_account_status(
         "data": res
     }
 
-
-# =========================================================================
-# FACULTY MANAGEMENT & ALLOCATION
-# =========================================================================
-
 @router.get("/faculty")
 async def get_all_faculty_members(current_admin: dict = Depends(get_current_admin)):
     faculty_list = await admin_service.get_all_faculty_admin()
@@ -158,7 +132,6 @@ async def get_all_faculty_members(current_admin: dict = Depends(get_current_admi
         "status": "success",
         "data": faculty_list
     }
-
 
 @router.post("/faculty")
 async def create_faculty_account(
@@ -178,7 +151,6 @@ async def create_faculty_account(
         "data": created
     }
 
-
 @router.put("/faculty/{faculty_id}")
 async def update_faculty_account(
     faculty_id: str,
@@ -192,7 +164,6 @@ async def update_faculty_account(
         "message": "Faculty details updated successfully",
         "data": res
     }
-
 
 @router.post("/faculty/reassign-course")
 async def reassign_course_to_faculty(
@@ -222,11 +193,6 @@ async def reassign_course_to_faculty(
             detail=str(e)
         )
 
-
-# =========================================================================
-# LABORATORY / COURSE MANAGEMENT
-# =========================================================================
-
 @router.get("/laboratories")
 async def get_all_laboratories(current_admin: dict = Depends(get_current_admin)):
     labs = await admin_service.get_admin_laboratories()
@@ -234,7 +200,6 @@ async def get_all_laboratories(current_admin: dict = Depends(get_current_admin))
         "status": "success",
         "data": labs
     }
-
 
 @router.put("/laboratories/{course_id}")
 async def update_laboratory(
@@ -249,11 +214,6 @@ async def update_laboratory(
         "data": res
     }
 
-
-# =========================================================================
-# ENROLLMENT MANAGEMENT
-# =========================================================================
-
 @router.get("/enrollments")
 async def get_enrollment_data(
     program: str = Query("MCA"),
@@ -265,7 +225,6 @@ async def get_enrollment_data(
         "status": "success",
         "data": matrix
     }
-
 
 @router.put("/enrollments/{student_id}")
 async def update_enrollments(
@@ -281,11 +240,6 @@ async def update_enrollments(
         "data": res
     }
 
-
-# =========================================================================
-# INSTITUTIONAL ANNOUNCEMENTS
-# =========================================================================
-
 @router.get("/announcements")
 async def get_announcements_list(current_admin: dict = Depends(get_current_admin)):
     items = await admin_service.get_admin_announcements()
@@ -293,7 +247,6 @@ async def get_announcements_list(current_admin: dict = Depends(get_current_admin
         "status": "success",
         "data": items
     }
-
 
 @router.post("/announcements")
 async def create_announcement_item(
@@ -313,7 +266,6 @@ async def create_announcement_item(
         "data": res
     }
 
-
 @router.delete("/announcements/{announcement_id}")
 async def delete_announcement_item(
     announcement_id: str,
@@ -325,11 +277,6 @@ async def delete_announcement_item(
         "status": "success",
         "data": res
     }
-
-
-# =========================================================================
-# AUDIT LOG
-# =========================================================================
 
 @router.get("/audit")
 async def get_system_audit_logs(
@@ -343,11 +290,6 @@ async def get_system_audit_logs(
         "data": logs
     }
 
-
-# =========================================================================
-# SYSTEM SETTINGS & MAINTENANCE MODE
-# =========================================================================
-
 @router.get("/settings")
 async def get_system_settings_data(current_admin: dict = Depends(get_current_admin)):
     settings_data = await admin_service.get_system_settings()
@@ -355,7 +297,6 @@ async def get_system_settings_data(current_admin: dict = Depends(get_current_adm
         "status": "success",
         "data": settings_data
     }
-
 
 @router.put("/settings")
 async def update_system_settings_data(
@@ -368,7 +309,6 @@ async def update_system_settings_data(
         "status": "success",
         "data": res
     }
-
 
 @router.post("/maintenance")
 async def toggle_maintenance_mode(

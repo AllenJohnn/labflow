@@ -29,7 +29,6 @@ export default function RecentActivity({ activities = [] }) {
               key={act.id}
               className="flex flex-wrap items-center justify-between gap-3 py-3.5 text-[13px] transition hover:bg-slate-50/50 px-2 -mx-2"
             >
-              {/* Left: Code badge & title */}
               <div className="flex items-center gap-3">
                 <span className="inline-block bg-[#f0f4fa] px-2.5 py-1 text-[11px] font-bold text-[#164a9c] tracking-wider uppercase border border-[#164a9c]/15">
                   {act.subjectCode}
@@ -37,7 +36,6 @@ export default function RecentActivity({ activities = [] }) {
                 <span className="font-medium text-slate-800">{act.title}</span>
               </div>
 
-              {/* Right: Status badge & timestamp */}
               <div className="flex items-center gap-4">
                 <span
                   className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold border ${

@@ -78,7 +78,6 @@ export const getFacultyLaboratories = async (forceRefresh = false) => {
     console.error("Error fetching faculty laboratories from API:", err);
   }
 
-  // Fallback default labs
   if (!cachedFacultyLabs) {
     cachedFacultyLabs = [
       {
@@ -114,7 +113,6 @@ export const getFacultyLaboratoryDetail = async (courseId, forceRefresh = false)
     console.error(`Error fetching lab ${cid} detail:`, err);
   }
 
-  // Fallback operational summary
   const defaultLab = {
     id: cid,
     course_id: cid,
@@ -159,7 +157,6 @@ export const getFacultyExercises = async (courseId, forceRefresh = false) => {
     console.error(`Error fetching exercises for ${cid}:`, err);
   }
 
-  // Default fallback
   const fallbackNSA = [
     {
       id: "nsa-ex1",
@@ -223,7 +220,6 @@ export const assignFacultyExercise = async (exerciseId, courseId) => {
   try {
     const res = await api.patch(`/faculty/exercises/${exerciseId}/assign`);
     if (res.data && res.data.data) {
-      // Invalidate and refresh cache
       delete cachedExercises[cid];
       delete cachedLabDetails[cid];
       cachedFacultyLabs = null;
@@ -234,7 +230,6 @@ export const assignFacultyExercise = async (exerciseId, courseId) => {
     console.error("Error assigning exercise on backend:", err);
   }
 
-  // Fallback optimistic update
   setLocalExerciseAssigned(exerciseId);
   if (cachedExercises[cid]) {
     cachedExercises[cid] = cachedExercises[cid].map((ex) => {
@@ -276,7 +271,6 @@ export const getFacultySubmissions = async (courseId, exerciseId = null, forceRe
     console.error("Error fetching submissions:", err);
   }
 
-  // Demo fallback submissions
   const students = [
     { name: "Allen John", student_id: "FIT25MCA-2008", status: "Submitted", time: "Today, 10:30 AM" },
     { name: "Anjali Nair", student_id: "FIT25MCA-2001", status: "Evaluated", time: "Yesterday", marks: "19/20" },
@@ -457,7 +451,6 @@ export const uploadFacultySyllabus = async (courseId, file) => {
     console.error("Error uploading syllabus on backend:", err);
   }
 
-  // Fallback optimistic update
   const newUrl = `/syllabi/${cid.toUpperCase()}-Syllabus.pdf?v=${Date.now()}`;
   if (cachedLabDetails[cid]) {
     cachedLabDetails[cid].syllabus_url = newUrl;
@@ -517,5 +510,3 @@ export const batchUpdateAttendance = async (courseId, sessionDate, newStatus) =>
     throw err;
   }
 };
-
-

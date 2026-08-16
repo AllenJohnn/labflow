@@ -74,7 +74,6 @@ export default function Settings() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="border-b border-slate-200/80 pb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -88,7 +87,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Status Notification */}
         {statusMessage.text && (
           <div
             className={`flex items-center justify-between p-3.5 text-[13px] border ${
@@ -114,7 +112,6 @@ export default function Settings() {
           </div>
         )}
 
-        {/* Settings Form */}
         <div className="border border-slate-200/80 bg-white shadow-xs">
           <div className="border-b border-slate-100 bg-[#fbfcfd] px-6 py-4">
             <h2 className="text-[15px] font-bold text-slate-800">
@@ -187,7 +184,6 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* Attendance Configuration Section */}
             <div className="pt-4 border-t border-slate-100">
               <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
                 <Award className="h-4 w-4 text-[#164a9c]" />
@@ -256,7 +252,6 @@ export default function Settings() {
           </form>
         </div>
 
-        {/* System Diagnostics Info */}
         <div className="border border-slate-200/80 bg-white p-6 shadow-xs space-y-3">
           <h3 className="text-[14px] font-bold text-slate-800 uppercase tracking-wider text-slate-400 text-[11px]">
             Platform Infrastructure Metadata

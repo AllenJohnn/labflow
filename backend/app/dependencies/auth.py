@@ -8,7 +8,6 @@ from app.services.admin_service import get_admin_by_id
 
 security = HTTPBearer()
 
-
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
@@ -50,7 +49,6 @@ async def get_current_user(
     user["role"] = role
     return user
 
-
 async def get_current_student(current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "student":
         raise HTTPException(
@@ -59,7 +57,6 @@ async def get_current_student(current_user: dict = Depends(get_current_user)):
         )
     return current_user
 
-
 async def get_current_faculty(current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "faculty":
         raise HTTPException(
@@ -67,7 +64,6 @@ async def get_current_faculty(current_user: dict = Depends(get_current_user)):
             detail="Access denied: Faculty access required"
         )
     return current_user
-
 
 async def get_current_admin(current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "admin":

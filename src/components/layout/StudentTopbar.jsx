@@ -12,7 +12,6 @@ export default function StudentTopbar({ profile, announcements, onToggleMobileSi
   return (
     <header className="shrink-0 border-b border-slate-200/80 bg-white">
       <div className="mx-auto flex h-[72px] items-center justify-between px-4 sm:px-8">
-        {/* Left: FISAT & LabFlow Institutional Branding */}
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -56,7 +55,6 @@ export default function StudentTopbar({ profile, announcements, onToggleMobileSi
           </div>
         </div>
 
-        {/* Right Actions: Notification Bell & Student Avatar + Name */}
         <div className="flex items-center gap-4">
           <AnnouncementPopover announcements={announcements} />
 
@@ -85,4 +83,3 @@ export default function StudentTopbar({ profile, announcements, onToggleMobileSi
     </header>
   );
 }
-

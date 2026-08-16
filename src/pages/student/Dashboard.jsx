@@ -21,7 +21,6 @@ import LaboratoryCard from "../../components/dashboard/LaboratoryCard";
 export default function Dashboard() {
   const { user } = useAuth();
 
-  // Initialize state synchronously from cache to eliminate loading delays when navigating back
   const [profile, setProfile] = useState(() => getCachedProfile());
   const [laboratories, setLaboratories] = useState(() => getCachedLaboratories() || []);
   const [announcements, setAnnouncements] = useState(() => getCachedAnnouncements() || []);
@@ -56,7 +55,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Dynamic time-based greeting calculation
   const getGreetingText = (fullName) => {
     const firstName = fullName ? fullName.split(" ")[0] : "Allen";
     const hour = new Date().getHours();
@@ -75,7 +73,6 @@ export default function Dashboard() {
   return (
     <StudentLayout profile={profile} announcements={announcements}>
       <div className="space-y-6">
-        {/* Compact Dashboard Greeting Header */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/70 pb-4">
           <div>
             <h1 className="text-[24px] font-bold text-slate-800 tracking-tight">
@@ -102,7 +99,6 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Attendance Schedule Info Strip */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-gradient-to-r from-blue-50/50 via-white to-slate-50 p-4 shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#164a9c] text-white shadow-xs">
@@ -129,7 +125,6 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* Primary Section: My Laboratories */}
         <section className="space-y-3.5 pt-1">
           <div>
             <h2 className="text-[19px] font-semibold text-slate-800 tracking-tight">
@@ -139,7 +134,6 @@ export default function Dashboard() {
               Your assigned programming laboratories
             </p>
           </div>
-
 
           {loading && laboratories.length === 0 ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -162,4 +156,3 @@ export default function Dashboard() {
     </StudentLayout>
   );
 }
-

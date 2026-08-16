@@ -9,7 +9,6 @@ async def run_tests():
     print("=======================================================\n")
 
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
-        # 1. Admin Login
         print("1. Testing Admin Authentication...")
         admin_login = await client.post("/auth/admin/login", json={"email": "admin@fisat.ac.in", "password": "admin123"})
         assert admin_login.status_code == 200, f"Admin login failed: {admin_login.text}"
@@ -17,7 +16,6 @@ async def run_tests():
         admin_headers = {"Authorization": f"Bearer {admin_token}"}
         print("   [PASS] Admin authenticated successfully.")
 
-        # 2. Faculty Login (Rakhi)
         print("2. Testing Faculty Authentication (Rakhi)...")
         faculty_login = await client.post("/auth/faculty/login", json={"email": "faculty@fisat.ac.in", "password": "faculty123"})
         assert faculty_login.status_code == 200, f"Faculty login failed: {faculty_login.text}"
@@ -25,7 +23,6 @@ async def run_tests():
         faculty_headers = {"Authorization": f"Bearer {faculty_token}"}
         print("   [PASS] Faculty authenticated successfully.")
 
-        # 3. Student Login (Allen John)
         print("3. Testing Student Authentication (Allen John)...")
         student_login = await client.post("/auth/student/login", json={"email": "student@fisat.ac.in", "password": "student123"})
         assert student_login.status_code == 200, f"Student login failed: {student_login.text}"
@@ -33,7 +30,6 @@ async def run_tests():
         student_headers = {"Authorization": f"Bearer {student_token}"}
         print("   [PASS] Student authenticated successfully.")
 
-        # 4. Security Tests: Student & Faculty cannot access Admin endpoints (403 Forbidden)
         print("4. Testing Admin Role Isolation & Security...")
         stud_to_admin = await client.get("/admin/stats", headers=student_headers)
         assert stud_to_admin.status_code == 403, f"Expected 403 for student accessing admin, got {stud_to_admin.status_code}"
@@ -45,7 +41,6 @@ async def run_tests():
         assert admin_to_admin.status_code == 200, f"Expected 200 for admin, got {admin_to_admin.status_code}"
         print("   [PASS] Role-based access control verified (Student: 403, Faculty: 403, Admin: 200).")
 
-        # 5. Academic Classes List & MCA S3 Details
         print("5. Testing Academic Classes Retrieval...")
         classes_res = await client.get("/admin/classes", headers=admin_headers)
         assert classes_res.status_code == 200
@@ -62,7 +57,6 @@ async def run_tests():
         assert len(c_info["subjects"]) == 3, f"Expected 3 subjects (NSA, ADBMS, JAVA), got {len(c_info['subjects'])}"
         print("   [PASS] MCA S3 academic details verified: 60 students and 3 subjects with assigned faculty.")
 
-        # 6. Student Inspection & Institutional Editing
         print("6. Testing Student Management & Institutional Updates...")
         student_res = await client.get("/admin/students/FIT25MCA-2008", headers=admin_headers)
         assert student_res.status_code == 200
@@ -78,7 +72,6 @@ async def run_tests():
         assert update_res.status_code == 200
         print("   [PASS] Successfully updated student institutional records.")
 
-        # 7. Faculty Management & Dynamic Course Reassignment
         print("7. Testing Faculty Management & Course Reassignment...")
         faculty_list_res = await client.get("/admin/faculty", headers=admin_headers)
         assert faculty_list_res.status_code == 200
@@ -86,11 +79,9 @@ async def run_tests():
         assert len(fac_list) >= 3, "Expected at least 3 faculty members"
         print(f"   [PASS] Retrieved {len(fac_list)} faculty members.")
 
-        # Verify Rakhi initially has access to NSA
         rakhi_nsa = await client.get("/faculty/laboratories/nsa", headers=faculty_headers)
         assert rakhi_nsa.status_code == 200, f"Rakhi should initially manage NSA, got {rakhi_nsa.status_code}"
 
-        # Reassign NSA to Shidha
         print("   -> Reassigning NSA from Rakhi to Shidha...")
         reassign_res = await client.post(
             "/admin/faculty/reassign-course",
@@ -99,12 +90,10 @@ async def run_tests():
         )
         assert reassign_res.status_code == 200
 
-        # Verify Rakhi is now FORBIDDEN (403) from NSA
         rakhi_nsa_after = await client.get("/faculty/laboratories/nsa", headers=faculty_headers)
         assert rakhi_nsa_after.status_code == 403, f"Expected 403 for Rakhi after reassignment, got {rakhi_nsa_after.status_code}"
         print("   [PASS] Previous faculty (Rakhi) immediately forbidden (403) from managing NSA.")
 
-        # Reassign back to Rakhi for normal operation
         print("   -> Reassigning NSA back to Rakhi...")
         reassign_back = await client.post(
             "/admin/faculty/reassign-course",
@@ -116,9 +105,7 @@ async def run_tests():
         assert rakhi_nsa_restored.status_code == 200
         print("   [PASS] Faculty management access restored to Rakhi.")
 
-        # 8. Maintenance Mode Workflow
         print("8. Testing Maintenance Mode State & Interception...")
-        # Enable maintenance
         maint_on = await client.post(
             "/admin/maintenance",
             headers=admin_headers,
@@ -130,21 +117,17 @@ async def run_tests():
         )
         assert maint_on.status_code == 200
 
-        # Verify Student request receives 503 Service Unavailable
         stud_req = await client.get("/student/me", headers=student_headers)
         assert stud_req.status_code == 503, f"Expected 503 for student during maintenance, got {stud_req.status_code}"
         assert stud_req.json()["status"] == "maintenance"
 
-        # Verify Faculty request receives 503 Service Unavailable
         fac_req = await client.get("/faculty/me", headers=faculty_headers)
         assert fac_req.status_code == 503, f"Expected 503 for faculty during maintenance, got {fac_req.status_code}"
 
-        # Verify Admin remains accessible (200 OK)
         admin_req = await client.get("/admin/stats", headers=admin_headers)
         assert admin_req.status_code == 200, f"Admin must remain accessible during maintenance, got {admin_req.status_code}"
         print("   [PASS] Maintenance mode active: Student (503), Faculty (503), Admin (200 OK).")
 
-        # Disable maintenance
         maint_off = await client.post(
             "/admin/maintenance",
             headers=admin_headers,
@@ -152,12 +135,10 @@ async def run_tests():
         )
         assert maint_off.status_code == 200
 
-        # Verify normal student access is restored
         stud_restored = await client.get("/student/me", headers=student_headers)
         assert stud_restored.status_code == 200
         print("   [PASS] Maintenance disabled and student access fully restored (200 OK).")
 
-        # 9. Audit Logs
         print("9. Testing Audit Log Recording...")
         audit_res = await client.get("/admin/audit", headers=admin_headers)
         assert audit_res.status_code == 200

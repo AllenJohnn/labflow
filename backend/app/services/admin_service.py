@@ -7,7 +7,6 @@ from app.core.security import hash_password, verify_password
 DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@fisat.ac.in")
 DEFAULT_ADMIN_PASS = os.getenv("DEFAULT_ADMIN_PASSWORD", "admin123")
 
-# Global in-memory system settings cache
 IN_MEMORY_SYSTEM_SETTINGS = {
     "maintenance_mode": False,
     "maintenance_message": "Maintenance in progress. The system is temporarily unavailable while maintenance is being performed. Please try again later.",
@@ -20,7 +19,6 @@ IN_MEMORY_SYSTEM_SETTINGS = {
     "late_grace_period_minutes": 10,
 }
 
-# Default Academic Programs & Classes
 DEFAULT_ACADEMIC_CLASSES = [
     {
         "class_id": "mca-s1",
@@ -147,7 +145,6 @@ DEFAULT_FACULTY_ROSTER = [
     },
 ]
 
-# In-memory Audit Logs
 IN_MEMORY_AUDIT_LOGS = [
     {
         "id": "audit-1",
@@ -183,13 +180,7 @@ IN_MEMORY_AUDIT_LOGS = [
     },
 ]
 
-
-# =========================================================================
-# AUDIT LOGGING HELPER
-# =========================================================================
-
 async def log_audit_action(action: str, target: str, summary: str, admin_name: str = "System Administrator"):
-    """Record an administrative operation for accountability (secrets strictly excluded)."""
     now_iso = datetime.now(timezone.utc).isoformat()
     entry = {
         "timestamp": now_iso,
@@ -200,7 +191,6 @@ async def log_audit_action(action: str, target: str, summary: str, admin_name: s
         "created_at": datetime.now(timezone.utc),
     }
 
-    # Insert into MongoDB
     try:
         res = await db.audit_logs.insert_one(dict(entry))
         entry["_id"] = str(res.inserted_id)
@@ -216,7 +206,6 @@ async def log_audit_action(action: str, target: str, summary: str, admin_name: s
     print(f"[Audit Log] {entry['action']} on '{entry['target']}' by {entry['admin']}: {entry['summary']}")
     return entry
 
-
 DEFAULT_FALLBACK_ADMIN = {
     "_id": ObjectId("66b9f1a0e4b0a1b2c3d4e5f9"),
     "name": "System Administrator",
@@ -225,11 +214,6 @@ DEFAULT_FALLBACK_ADMIN = {
     "department": "Central IT & Lab Administration",
     "password_hash": hash_password(DEFAULT_ADMIN_PASS),
 }
-
-
-# =========================================================================
-# AUTHENTICATION & INITIALIZATION
-# =========================================================================
 
 async def get_admin_by_email(email: str):
     if not email:
@@ -246,7 +230,6 @@ async def get_admin_by_email(email: str):
         return DEFAULT_FALLBACK_ADMIN
     return None
 
-
 async def get_admin_by_id(admin_id: str):
     if not admin_id:
         return None
@@ -261,7 +244,6 @@ async def get_admin_by_id(admin_id: str):
     if str(admin_id) == str(DEFAULT_FALLBACK_ADMIN["_id"]) or admin_id == "admin":
         return DEFAULT_FALLBACK_ADMIN
     return None
-
 
 async def create_admin(data: dict):
     now = datetime.now(timezone.utc)
@@ -287,7 +269,6 @@ async def create_admin(data: dict):
         admin_doc["_id"] = DEFAULT_FALLBACK_ADMIN["_id"]
         return admin_doc
 
-
 async def verify_admin_credentials(email: str, password: str):
     clean_email = email.lower().strip()
     admin = await get_admin_by_email(clean_email)
@@ -298,7 +279,6 @@ async def verify_admin_credentials(email: str, password: str):
         elif password == DEFAULT_ADMIN_PASS:
             return admin
     return None
-
 
 async def init_default_admin():
     try:
@@ -324,7 +304,6 @@ async def init_default_admin():
             })
             print(f"[Database] Default admin inserted in MongoDB: {email}")
 
-        # Seed system settings if not present
         settings_doc = await db.system_settings.find_one({"type": "general"})
         if not settings_doc:
             await db.system_settings.insert_one({
@@ -337,7 +316,6 @@ async def init_default_admin():
                 "updated_at": datetime.now(timezone.utc)
             })
 
-        # Seed additional faculty members into db.faculty if needed
         for fac in DEFAULT_FACULTY_ROSTER:
             fac_existing = await db.faculty.find_one({"email": fac["email"].lower().strip()})
             if not fac_existing:
@@ -361,15 +339,8 @@ async def init_default_admin():
     except Exception as e:
         print(f"[Database] Default admin initialization notice: {e}")
 
-
-# =========================================================================
-# SYSTEM STATUS & MAINTENANCE MODE
-# =========================================================================
-
 def is_maintenance_active() -> bool:
-    """Synchronous fast-check for maintenance mode."""
     return IN_MEMORY_SYSTEM_SETTINGS.get("maintenance_mode", False)
-
 
 async def get_system_settings():
     try:
@@ -399,7 +370,6 @@ async def get_system_settings():
         "system_status": "Maintenance Active" if IN_MEMORY_SYSTEM_SETTINGS["maintenance_mode"] else "Operational",
     }
 
-
 async def set_maintenance_mode(is_enabled: bool, message: str = "", expected_return: str = "", admin_name: str = "System Administrator"):
     IN_MEMORY_SYSTEM_SETTINGS["maintenance_mode"] = is_enabled
     if message:
@@ -426,7 +396,6 @@ async def set_maintenance_mode(is_enabled: bool, message: str = "", expected_ret
     await log_audit_action(action, "System Infrastructure", summary, admin_name)
 
     return await get_system_settings()
-
 
 async def update_system_settings(data: dict, admin_name: str = "System Administrator"):
     if "academic_year" in data:
@@ -460,11 +429,6 @@ async def update_system_settings(data: dict, admin_name: str = "System Administr
         admin_name
     )
     return await get_system_settings()
-
-
-# =========================================================================
-# DASHBOARD STATS & METRICS
-# =========================================================================
 
 async def get_admin_dashboard_metrics():
     total_students = 60
@@ -502,14 +466,7 @@ async def get_admin_dashboard_metrics():
         "default_semester": sys_settings["default_semester"],
     }
 
-
-# =========================================================================
-# ACADEMIC CLASSES & PROGRAM SECTIONS
-# =========================================================================
-
 async def get_academic_classes():
-    """Retrieve all academic program sections grouped by program (MCA, IMCA, CSE)."""
-    # Count real students in MCA S3
     mca_s3_count = 60
     try:
         c = await db.students.count_documents({"department": "MCA", "semester": 3})
@@ -525,7 +482,6 @@ async def get_academic_classes():
             item["student_count"] = mca_s3_count
         classes.append(item)
 
-    # Group by Program
     grouped = {}
     for cls in classes:
         prog = cls["program"]
@@ -538,13 +494,10 @@ async def get_academic_classes():
         "grouped_by_program": grouped,
     }
 
-
 async def get_academic_class_details(program: str, semester: str):
-    """Retrieve details for an academic class including subjects, faculty, and enrolled students."""
     prog_clean = program.upper().strip()
     sem_clean = semester.upper().strip()
 
-    # Find class configuration
     cls_config = next(
         (c for c in DEFAULT_ACADEMIC_CLASSES if c["program"].upper() == prog_clean and c["semester"].upper() == sem_clean),
         None
@@ -562,7 +515,6 @@ async def get_academic_class_details(program: str, semester: str):
             "subjects": []
         }
 
-    # Fetch students for this class
     students_list = []
     sem_num = 3 if "3" in sem_clean else (1 if "1" in sem_clean else 5)
     try:
@@ -582,7 +534,6 @@ async def get_academic_class_details(program: str, semester: str):
     except Exception as e:
         print(f"[Admin] Fetch class students notice: {e}")
 
-    # Fallback to demo 60 students if MCA S3
     if not students_list and prog_clean == "MCA" and sem_clean == "S3":
         from app.services.faculty_service import DEMO_STUDENTS
         students_list = [
@@ -599,7 +550,6 @@ async def get_academic_class_details(program: str, semester: str):
             for idx, s in enumerate(DEMO_STUDENTS)
         ]
 
-    # Synchronize current faculty assignments for class subjects
     subjects = []
     for subj in cls_config.get("subjects", []):
         s_item = dict(subj)
@@ -625,11 +575,6 @@ async def get_academic_class_details(program: str, semester: str):
         "subjects": subjects,
         "students": students_list,
     }
-
-
-# =========================================================================
-# STUDENT MANAGEMENT (ADMIN INSTITUTIONAL AUTHORITY)
-# =========================================================================
 
 async def get_admin_students(search: str = "", program: str = "", semester: str = "", status: str = "", limit: int = 100, skip: int = 0):
     query = {}
@@ -664,7 +609,6 @@ async def get_admin_students(search: str = "", program: str = "", semester: str 
     except Exception as e:
         print(f"[Admin] DB fetch students notice: {e}")
 
-    # Fallback if empty
     if not students:
         from app.services.faculty_service import DEMO_STUDENTS
         students = [
@@ -683,7 +627,6 @@ async def get_admin_students(search: str = "", program: str = "", semester: str 
             for idx, s in enumerate(DEMO_STUDENTS)
         ]
 
-    # Filter by search string in-memory if needed
     if search:
         s_term = search.lower().strip()
         students = [s for s in students if s_term in s["name"].lower() or s_term in s["student_id"].lower() or s_term in s["email"].lower()]
@@ -693,9 +636,7 @@ async def get_admin_students(search: str = "", program: str = "", semester: str 
         "students": students,
     }
 
-
 async def get_admin_student_by_id(student_id_or_obj_id: str):
-    """Retrieve full student institutional record for admin inspection & modification."""
     clean_id = student_id_or_obj_id.strip()
     student_doc = None
 
@@ -729,7 +670,6 @@ async def get_admin_student_by_id(student_id_or_obj_id: str):
     if not student_doc:
         return None
 
-    # Format available laboratories with enrollment flag
     enrolled_set = set([str(c).lower() for c in student_doc.get("enrolled_courses", ["nsa", "adbms", "java"])])
     available_labs = [
         {"course_id": "nsa", "code": "NSA", "name": "Network Security & Applications", "faculty": "Rakhi", "is_enrolled": "nsa" in enrolled_set},
@@ -758,9 +698,7 @@ async def get_admin_student_by_id(student_id_or_obj_id: str):
         }
     }
 
-
 async def update_admin_student(student_id_or_obj_id: str, data: dict, admin_name: str = "System Administrator"):
-    """Update institutional student records (Admin only)."""
     clean_id = student_id_or_obj_id.strip()
 
     update_fields = {}
@@ -805,7 +743,6 @@ async def update_admin_student(student_id_or_obj_id: str, data: dict, admin_name
 
     update_fields["updated_at"] = datetime.now(timezone.utc)
 
-    # Perform DB update
     try:
         query = {"_id": ObjectId(clean_id)} if ObjectId.is_valid(clean_id) else {"student_id": clean_id.upper()}
         await db.students.update_one(query, {"$set": update_fields})
@@ -818,9 +755,7 @@ async def update_admin_student(student_id_or_obj_id: str, data: dict, admin_name
 
     return await get_admin_student_by_id(clean_id)
 
-
 async def create_admin_student(data: dict, admin_name: str = "System Administrator"):
-    """Register a new student account into the academic institution."""
     now = datetime.now(timezone.utc)
     name = data.get("name", "").strip()
     email = data.get("email", "").lower().strip()
@@ -860,7 +795,6 @@ async def create_admin_student(data: dict, admin_name: str = "System Administrat
     await log_audit_action("CREATE_STUDENT", f"{name} ({student_id})", f"Enrolled in {dept} S{sem_int} with courses {', '.join(enrolled).upper()}", admin_name)
     return await get_admin_student_by_id(student_id)
 
-
 async def toggle_student_status(student_id: str, is_active: bool, admin_name: str = "System Administrator"):
     try:
         query = {"_id": ObjectId(student_id)} if ObjectId.is_valid(student_id) else {"student_id": student_id.upper()}
@@ -872,13 +806,7 @@ async def toggle_student_status(student_id: str, is_active: bool, admin_name: st
     await log_audit_action(action, student_id, f"Set account status to {'Active' if is_active else 'Inactive'}", admin_name)
     return {"student_id": student_id, "is_active": is_active}
 
-
-# =========================================================================
-# FACULTY MANAGEMENT & COURSE ALLOCATION
-# =========================================================================
-
 async def get_all_faculty_admin():
-    """Retrieve all faculty members along with assigned laboratories."""
     faculty_list = []
     try:
         cursor = db.faculty.find({}).sort("name", 1)
@@ -904,9 +832,7 @@ async def get_all_faculty_admin():
 
     return faculty_list
 
-
 async def create_faculty_member(data: dict, admin_name: str = "System Administrator"):
-    """Register a new faculty member."""
     now = datetime.now(timezone.utc)
     name = data.get("name", "").strip()
     email = data.get("email", "").lower().strip()
@@ -938,9 +864,7 @@ async def create_faculty_member(data: dict, admin_name: str = "System Administra
     await log_audit_action("CREATE_FACULTY", f"{name} ({fac_id})", f"Created faculty in {fac_doc['department']} with labs: {', '.join(assigned).upper()}", admin_name)
     return fac_doc
 
-
 async def update_faculty_member(faculty_id: str, data: dict, admin_name: str = "System Administrator"):
-    """Update institutional faculty profile."""
     update_fields = {}
     changes = []
 
@@ -973,17 +897,10 @@ async def update_faculty_member(faculty_id: str, data: dict, admin_name: str = "
     await log_audit_action("UPDATE_FACULTY", faculty_id, f"Updated faculty profile: {', '.join(changes)}", admin_name)
     return {"faculty_id": faculty_id, "updated": True}
 
-
 async def reassign_faculty_course(course_id: str, target_faculty_id_or_email: str, admin_name: str = "System Administrator"):
-    """
-    Institutional Course Reassignment.
-    Reassigns a laboratory course from current faculty to a new faculty member.
-    Enforces immediate backend authorization shift (previous faculty loses access).
-    """
     cid = course_id.lower().strip()
     target_clean = target_faculty_id_or_email.strip()
 
-    # 1. Find the target faculty document
     target_fac = None
     try:
         if ObjectId.is_valid(target_clean):
@@ -1004,14 +921,11 @@ async def reassign_faculty_course(course_id: str, target_faculty_id_or_email: st
     new_faculty_name = target_fac["name"]
     new_faculty_email = target_fac["email"]
 
-    # 2. Identify and remove course_id from any faculty member who previously held it
     try:
-        # Pull course_id from all other faculty
         await db.faculty.update_many(
             {"assigned_labs": cid},
             {"$pull": {"assigned_labs": cid}, "$set": {"updated_at": datetime.now(timezone.utc)}}
         )
-        # Add course_id to the target faculty member
         if ObjectId.is_valid(str(target_fac.get("_id", ""))):
             await db.faculty.update_one(
                 {"_id": target_fac["_id"]},
@@ -1023,7 +937,6 @@ async def reassign_faculty_course(course_id: str, target_faculty_id_or_email: st
                 {"$addToSet": {"assigned_labs": cid}, "$set": {"updated_at": datetime.now(timezone.utc)}}
             )
 
-        # 3. Update the Laboratory document's faculty fields
         await db.laboratories.update_one(
             {"course_id": cid},
             {"$set": {
@@ -1035,7 +948,6 @@ async def reassign_faculty_course(course_id: str, target_faculty_id_or_email: st
     except Exception as e:
         print(f"[Admin] Reassign faculty course DB notice: {e}")
 
-    # Synchronize in-memory structures
     for f in DEFAULT_FACULTY_ROSTER:
         if cid in f["assigned_labs"]:
             f["assigned_labs"].remove(cid)
@@ -1069,13 +981,7 @@ async def reassign_faculty_course(course_id: str, target_faculty_id_or_email: st
         "message": summary
     }
 
-
-# =========================================================================
-# LABORATORY / COURSE MANAGEMENT
-# =========================================================================
-
 async def get_admin_laboratories():
-    """Retrieve all laboratory subjects for institutional oversight."""
     from app.services.faculty_service import DEFAULT_LABS
     labs = []
     try:
@@ -1119,7 +1025,6 @@ async def get_admin_laboratories():
 
     return labs
 
-
 async def update_admin_laboratory(course_id: str, data: dict, admin_name: str = "System Administrator"):
     cid = course_id.lower().strip()
     update_fields = {}
@@ -1142,18 +1047,10 @@ async def update_admin_laboratory(course_id: str, data: dict, admin_name: str = 
     await log_audit_action("UPDATE_LABORATORY", f"Course: {cid.upper()}", f"Updated course configuration: {data}", admin_name)
     return {"course_id": cid, "updated": True}
 
-
-# =========================================================================
-# ENROLLMENT MANAGEMENT
-# =========================================================================
-
 async def get_enrollment_overview(program: str = "MCA", semester: str = "S3"):
-    """Retrieve full enrollment matrix for a class."""
     return await get_academic_class_details(program, semester)
 
-
 async def update_student_enrollments(student_id: str, courses: list[str], admin_name: str = "System Administrator"):
-    """Add or remove laboratory enrollments for a student."""
     clean_courses = [str(c).lower().strip() for c in courses if c]
     try:
         query = {"_id": ObjectId(student_id)} if ObjectId.is_valid(student_id) else {"student_id": student_id.upper()}
@@ -1163,11 +1060,6 @@ async def update_student_enrollments(student_id: str, courses: list[str], admin_
 
     await log_audit_action("UPDATE_ENROLLMENT", student_id, f"Enrolled courses set to: {', '.join(clean_courses).upper()}", admin_name)
     return {"student_id": student_id, "enrolled_courses": clean_courses}
-
-
-# =========================================================================
-# INSTITUTIONAL ANNOUNCEMENTS
-# =========================================================================
 
 async def get_admin_announcements():
     announcements = []
@@ -1209,7 +1101,6 @@ async def get_admin_announcements():
 
     return announcements
 
-
 async def create_admin_announcement(data: dict, admin_name: str = "System Administrator"):
     now = datetime.now(timezone.utc)
     ann_doc = {
@@ -1233,7 +1124,6 @@ async def create_admin_announcement(data: dict, admin_name: str = "System Admini
     await log_audit_action("CREATE_ANNOUNCEMENT", f"Audience: {ann_doc['audience']}", f"Published notice: '{ann_doc['title']}'", admin_name)
     return ann_doc
 
-
 async def delete_admin_announcement(announcement_id: str, admin_name: str = "System Administrator"):
     try:
         query = {"_id": ObjectId(announcement_id)} if ObjectId.is_valid(announcement_id) else {"id": announcement_id}
@@ -1244,13 +1134,7 @@ async def delete_admin_announcement(announcement_id: str, admin_name: str = "Sys
     await log_audit_action("DELETE_ANNOUNCEMENT", announcement_id, "Removed institutional announcement.", admin_name)
     return {"id": announcement_id, "deleted": True}
 
-
-# =========================================================================
-# AUDIT LOGS RETRIEVAL
-# =========================================================================
-
 async def get_audit_logs(limit: int = 50, action_filter: str = ""):
-    """Retrieve audit history."""
     logs = []
     query = {}
     if action_filter and action_filter != "all":

@@ -16,7 +16,6 @@ import FacultyLaboratoryCard from "../../components/dashboard/FacultyLaboratoryC
 export default function FacultyDashboard() {
   const { user } = useAuth();
 
-  // Initialize state synchronously from cache to eliminate loading delays
   const [profile, setProfile] = useState(() => getCachedFacultyProfile());
   const [laboratories, setLaboratories] = useState(() => getCachedFacultyLabs() || []);
   const [announcements, setAnnouncements] = useState(() => getCachedAnnouncements() || []);
@@ -51,7 +50,6 @@ export default function FacultyDashboard() {
     };
   }, []);
 
-  // Dynamic time-based greeting calculation
   const getGreetingText = (fullName) => {
     const firstName = fullName ? fullName.split(" ")[0] : "Rakhi";
     const hour = new Date().getHours();
@@ -70,7 +68,6 @@ export default function FacultyDashboard() {
   return (
     <FacultyLayout profile={profile} announcements={announcements}>
       <div className="space-y-6">
-        {/* Dashboard Greeting Header */}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/70 pb-4">
           <div>
             <h1 className="text-[24px] font-bold text-slate-800 tracking-tight">
@@ -93,7 +90,6 @@ export default function FacultyDashboard() {
           </Link>
         </div>
 
-        {/* Primary Section: My Laboratories */}
         <section className="space-y-3.5 pt-1">
           <div>
             <h2 className="text-[19px] font-semibold text-slate-800 tracking-tight">

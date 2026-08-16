@@ -80,7 +80,6 @@ DEFAULT_TIMETABLE = [
         "department": "MCA",
         "semester": "S3"
     },
-    # Saturday demo scheduled lab session (matching current system date context)
     {
         "id": "tt-6",
         "day": "Saturday",
@@ -98,9 +97,7 @@ DEFAULT_TIMETABLE = [
     }
 ]
 
-# Generate realistic historical lab session dates for current semester
 HISTORICAL_SESSIONS = [
-    # August 2026
     {"id": "sess-1", "date": "2026-08-03", "course_id": "nsa", "topic": "Socket Programming Basics", "time": "09:30 - 12:30", "faculty": "Rakhi", "location": "Systems Lab 1"},
     {"id": "sess-2", "date": "2026-08-04", "course_id": "nsa", "topic": "Packet Sniffing with Wireshark", "time": "10:30 - 12:30", "faculty": "Rakhi", "location": "Systems Lab 1"},
     {"id": "sess-3", "date": "2026-08-05", "course_id": "adbms", "topic": "Relational Schema DDL/DML", "time": "13:30 - 16:30", "faculty": "Shidha", "location": "Database Systems Lab"},
@@ -114,26 +111,22 @@ HISTORICAL_SESSIONS = [
     {"id": "sess-11", "date": "2026-08-15", "course_id": "nsa", "topic": "Cryptographic Ciphers & Hashing", "time": "09:30 - 12:30", "faculty": "Rakhi", "location": "Systems Lab 1"},
 ]
 
-# In-memory store for session overrides and live check-ins
 IN_MEMORY_ATTENDANCE = {}
 
 STUDENT_ENROLLED_LABS = ["nsa", "adbms", "java"]
 
-
 def get_active_or_next_lab_session(department="MCA", semester="S3", target_course_id=None):
-    """Identify if there is currently an active lab session for a course or determine the next upcoming class."""
     now = datetime.now()
     current_weekday = now.strftime("%A")
     current_time_str = now.strftime("%H:%M")
     today_str = now.strftime("%Y-%m-%d")
 
     active_session = None
-    
-    # Check if today has a scheduled lab session matching current time
+
     for item in DEFAULT_TIMETABLE:
         if target_course_id and item["course_id"].lower() != target_course_id.lower():
             continue
-            
+
         if item["day"].lower() == current_weekday.lower():
             if item["start_time"] <= current_time_str <= item["end_time"]:
                 active_session = {
@@ -152,10 +145,9 @@ def get_active_or_next_lab_session(department="MCA", semester="S3", target_cours
                 }
                 break
 
-    # If looking for next upcoming classes across timetable
     upcoming = []
     days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-    current_day_idx = now.weekday()  # 0=Monday
+    current_day_idx = now.weekday()
 
     for offset in range(1, 8):
         check_day_idx = (current_day_idx + offset) % 7
@@ -178,17 +170,7 @@ def get_active_or_next_lab_session(department="MCA", semester="S3", target_cours
         "current_time": current_time_str
     }
 
-
 async def record_student_lab_attendance(student_doc: dict, course_id: str, is_manual: bool = False):
-    """
-    Validate and record student attendance ONLY when entering/checking into a specific laboratory.
-    Enforces:
-    1. Student authentication & role
-    2. Student course enrollment
-    3. Active scheduled timetable session validation
-    4. Duplicate prevention
-    5. Admin-configured grace period calculation (Present vs Late)
-    """
     if not student_doc:
         return {"status": "unauthorized", "message": "Authentication required."}
 
@@ -199,14 +181,12 @@ async def record_student_lab_attendance(student_doc: dict, course_id: str, is_ma
     today_str = datetime.now().strftime("%Y-%m-%d")
     current_time_str = datetime.now().strftime("%H:%M:%S")
 
-    # 1. Enrollment Verification
     if cid not in STUDENT_ENROLLED_LABS:
         return {
             "status": "not_enrolled",
             "message": f"Student is not enrolled in laboratory '{course_id.upper()}'."
         }
 
-    # 2. Duplicate Prevention Check
     rec_key = f"{student_id}_{cid}_{today_str}"
     if rec_key in IN_MEMORY_ATTENDANCE:
         existing = IN_MEMORY_ATTENDANCE[rec_key]
@@ -235,7 +215,6 @@ async def record_student_lab_attendance(student_doc: dict, course_id: str, is_ma
     except Exception as e:
         print(f"[Attendance] DB duplicate check notice: {e}")
 
-    # 3. Active Timetable Session Verification
     session_info = get_active_or_next_lab_session(target_course_id=cid)
     active_session = session_info["active_session"]
 
@@ -245,14 +224,13 @@ async def record_student_lab_attendance(student_doc: dict, course_id: str, is_ma
             "message": f"No active scheduled session for laboratory '{course_id.upper()}' at this time."
         }
 
-    # 4. Present vs Late Calculation via Admin Grace Period
     grace_period_mins = IN_MEMORY_SYSTEM_SETTINGS.get("late_grace_period_minutes", 10)
     try:
         start_parts = active_session["start_time"].split(":")
         start_minutes = int(start_parts[0]) * 60 + int(start_parts[1])
         now_time = datetime.now()
         current_minutes = now_time.hour * 60 + now_time.minute
-        
+
         if current_minutes <= (start_minutes + grace_period_mins):
             attendance_status = "Present"
         else:
@@ -260,7 +238,6 @@ async def record_student_lab_attendance(student_doc: dict, course_id: str, is_ma
     except Exception:
         attendance_status = "Present"
 
-    # 5. Persist Attendance Record
     source_type = "manual_check_in" if is_manual else "auto_lab_entry"
     marked_by = "System (Manual Check-In)" if is_manual else "System (Auto Lab Entry)"
 
@@ -298,16 +275,12 @@ async def record_student_lab_attendance(student_doc: dict, course_id: str, is_ma
         "record": attendance_record
     }
 
-
 async def get_student_attendance_data(student_doc: dict):
-    """Compute complete student attendance metrics, calendar records, and course breakdown with multi-session support."""
     student_id = student_doc.get("student_id") or "FIT25MCA-2008"
     student_name = student_doc.get("name", "Allen John Joy")
-    
-    # Read admin-configured required threshold
+
     required_threshold = float(IN_MEMORY_SYSTEM_SETTINGS.get("required_attendance_threshold", 75.0))
 
-    # Fetch DB records for student
     db_records = {}
     try:
         cursor = db.attendance.find({"student_id": student_id})
@@ -317,7 +290,6 @@ async def get_student_attendance_data(student_doc: dict):
     except Exception:
         pass
 
-    # Build calendar records
     calendar_days = []
     course_counts = {
         "nsa": {"attended": 0, "total": 0, "name": "Network Security & Applications Lab", "code": "20MCA131"},
@@ -332,7 +304,7 @@ async def get_student_attendance_data(student_doc: dict):
 
         status = "Present"
         marked_by = "System (Lab Entry)"
-        
+
         if rec_key in IN_MEMORY_ATTENDANCE:
             status = IN_MEMORY_ATTENDANCE[rec_key].get("status", "Present")
             marked_by = IN_MEMORY_ATTENDANCE[rec_key].get("marked_by", "Faculty Override")
@@ -340,7 +312,6 @@ async def get_student_attendance_data(student_doc: dict):
             status = db_records[f"{cid}_{sess_date}"].get("status", "Present")
             marked_by = db_records[f"{cid}_{sess_date}"].get("marked_by", "Faculty")
         else:
-            # Deterministic academic historical baseline
             if idx == 3:
                 status = "Absent"
                 marked_by = "Faculty (Unexcused Absence)"
@@ -369,13 +340,11 @@ async def get_student_attendance_data(student_doc: dict):
             "marked_by": marked_by
         })
 
-    # Overall totals
     total_conducted = sum(c["total"] for c in course_counts.values())
     total_attended = sum(c["attended"] for c in course_counts.values())
     overall_percentage = round((total_attended / total_conducted * 100), 1) if total_conducted > 0 else 100.0
     is_above_threshold = overall_percentage >= required_threshold
 
-    # Course stats breakdown with neutral application-level threshold status
     courses_breakdown = []
     for cid, data in course_counts.items():
         pct = round((data["attended"] / data["total"] * 100), 1) if data["total"] > 0 else 100.0
@@ -408,23 +377,21 @@ async def get_student_attendance_data(student_doc: dict):
         "timetable": DEFAULT_TIMETABLE
     }
 
-
 async def get_faculty_attendance_overview(faculty_doc: dict):
-    """Retrieve laboratory attendance metrics and student summaries for faculty member."""
     assigned_labs = [str(x).lower().strip() for x in faculty_doc.get("assigned_labs", ["nsa"])]
     required_threshold = float(IN_MEMORY_SYSTEM_SETTINGS.get("required_attendance_threshold", 75.0))
-    
+
     labs_summary = []
     total_students_managed = 60
-    
+
     for cid in assigned_labs:
         course_name = "Network Security & Applications Lab" if cid == "nsa" else ("Advanced DBMS Lab" if cid == "adbms" else "Object Oriented Programming Lab")
         course_code = "20MCA131" if cid == "nsa" else ("20MCA134" if cid == "adbms" else "20MCA132")
-        
+
         sessions = [s for s in HISTORICAL_SESSIONS if s["course_id"] == cid]
         session_count = len(sessions)
         avg_pct = 93.4 if cid == "nsa" else (91.8 if cid == "adbms" else 95.0)
-        
+
         labs_summary.append({
             "course_id": cid,
             "code": course_code,
@@ -447,9 +414,7 @@ async def get_faculty_attendance_overview(faculty_doc: dict):
         "timetable": [t for t in DEFAULT_TIMETABLE if t["course_id"] in assigned_labs]
     }
 
-
 async def get_faculty_session_attendance_roster(course_id: str, session_date: str):
-    """Fetch complete class roster attendance records for a specific laboratory and date."""
     from app.services.faculty_service import DEMO_STUDENTS
     cid = course_id.lower().strip()
 
@@ -457,10 +422,10 @@ async def get_faculty_session_attendance_roster(course_id: str, session_date: st
     for s in DEMO_STUDENTS:
         sid = s["student_id"]
         rec_key = f"{sid}_{cid}_{session_date}"
-        
+
         status = "Present"
         marked_by = "System (Lab Entry)"
-        
+
         if rec_key in IN_MEMORY_ATTENDANCE:
             status = IN_MEMORY_ATTENDANCE[rec_key].get("status", "Present")
             marked_by = IN_MEMORY_ATTENDANCE[rec_key].get("marked_by", "Faculty Override")
@@ -503,12 +468,10 @@ async def get_faculty_session_attendance_roster(course_id: str, session_date: st
         "students": student_records
     }
 
-
 async def update_single_student_attendance(course_id: str, student_id: str, session_date: str, new_status: str, faculty_name: str = "Faculty"):
-    """Update or override individual student attendance for a given lab session and record in audit log."""
     cid = course_id.lower().strip()
     rec_key = f"{student_id}_{cid}_{session_date}"
-    
+
     record = {
         "student_id": student_id,
         "course_id": cid,
@@ -518,7 +481,7 @@ async def update_single_student_attendance(course_id: str, student_id: str, sess
         "marked_by": f"Faculty ({faculty_name})",
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
-    
+
     IN_MEMORY_ATTENDANCE[rec_key] = record
 
     try:
@@ -530,7 +493,6 @@ async def update_single_student_attendance(course_id: str, student_id: str, sess
     except Exception as e:
         print(f"[Attendance] DB update notice: {e}")
 
-    # Record in Audit Log
     try:
         await log_audit_action(
             action="MANUAL_ATTENDANCE_OVERRIDE",
@@ -543,9 +505,7 @@ async def update_single_student_attendance(course_id: str, student_id: str, sess
 
     return record
 
-
 async def batch_update_course_attendance(course_id: str, session_date: str, new_status: str, faculty_name: str = "Faculty"):
-    """Batch mark all enrolled students for a session as Present, Absent, etc. with audit logging."""
     from app.services.faculty_service import DEMO_STUDENTS
     cid = course_id.lower().strip()
 
@@ -576,7 +536,6 @@ async def batch_update_course_attendance(course_id: str, session_date: str, new_
     except Exception as e:
         print(f"[Attendance] DB batch update notice: {e}")
 
-    # Record in Audit Log
     try:
         await log_audit_action(
             action="BATCH_ATTENDANCE_UPDATE",
