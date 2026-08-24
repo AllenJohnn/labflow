@@ -22,26 +22,23 @@ export default function StudentSubmissionModal({ exercise, isOpen, onClose, onSu
   useEffect(() => {
     if (!isOpen || !exercise) return;
 
-    // Reset or update state based on exercise
-    const initialLang = exercise.submission?.language || exercise.language || defaultLangForCourse(exercise.courseId || exercise.course_id);
-    setLanguage(initialLang);
-    if (exercise.submission?.submitted_code) {
-      setCode(exercise.submission.submitted_code);
-    }
-    if (exercise.submission?.comments) {
-      setComments(exercise.submission.comments);
-    }
-
     let isMounted = true;
     async function fetchSub() {
       setLoading(true);
       try {
         const subData = await getStudentExerciseSubmission(exercise.id || exercise.exercise_id);
-        if (isMounted && subData) {
-          setSubmission(subData);
-          if (subData.submitted_code) setCode(subData.submitted_code);
-          if (subData.comments) setComments(subData.comments);
-          if (subData.language) setLanguage(subData.language);
+        if (isMounted) {
+          if (subData) {
+            setSubmission(subData);
+            setCode(subData.submitted_code || "");
+            setComments(subData.comments || "");
+            setLanguage(subData.language || exercise.language || defaultLangForCourse(exercise.courseId || exercise.course_id));
+          } else {
+            setSubmission(exercise.submission || null);
+            setCode(exercise.submission?.submitted_code || "");
+            setComments(exercise.submission?.comments || "");
+            setLanguage(exercise.submission?.language || exercise.language || defaultLangForCourse(exercise.courseId || exercise.course_id));
+          }
         }
       } catch (err) {
         console.error("Error fetching exercise submission:", err);

@@ -245,6 +245,8 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
     submission_id = f"sub-{cid}-{exercise.get('exercise_number', '01')}-{stu_id}"
 
     # Check for existing submission to preserve any prior evaluation status if just updating code
+    existing_sub = await get_student_exercise_submission(student_doc, eid)
+
     code = payload.get("code") or payload.get("submitted_code") or ""
     comments = payload.get("comments") or ""
 
