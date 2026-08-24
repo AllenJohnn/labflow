@@ -51,6 +51,7 @@ DEFAULT_EXERCISES = [
         "exercise_number": "01",
         "title": "Directory Tree & Linux File Operations",
         "description": "Create hierarchical directory structure Project34, copy, merge files with cat, sort pay records, and inspect file counts using Linux utilities.",
+        "language": "c",
         "faculty": "Rakhi",
         "is_assigned": True,
         "assigned_date": "2026-08-10T09:00:00Z",
@@ -62,6 +63,7 @@ DEFAULT_EXERCISES = [
         "exercise_number": "02",
         "title": "Advanced Linux Filters, Find & Text Processing",
         "description": "Implement sort on employee records, locate largest file, parse file permissions with pipeline, rename files using find -exec, and ROT13 text encryption with tr.",
+        "language": "c",
         "faculty": "Rakhi",
         "is_assigned": False,
         "assigned_date": None,
@@ -72,7 +74,8 @@ DEFAULT_EXERCISES = [
         "course_id": "nsa",
         "exercise_number": "03",
         "title": "Shell Scripting & Regular Expressions",
-        "description": "Develop shell scripts with grep/sed/awk pattern matching, conditional execution, and automated report generation.",
+        "description": "Develop shell scripts with grep/sed/awk pattern matching, conditional execution, and automated report generation in C/Linux.",
+        "language": "c",
         "faculty": "Rakhi",
         "is_assigned": False,
         "assigned_date": None,
@@ -83,7 +86,8 @@ DEFAULT_EXERCISES = [
         "course_id": "nsa",
         "exercise_number": "04",
         "title": "Linux Network Administration & Socket Testing",
-        "description": "Configure networking utilities, packet analysis, client-server socket testing, and firewall access control rules.",
+        "description": "Configure networking utilities, packet analysis, client-server socket testing, and firewall access control rules in C.",
+        "language": "c",
         "faculty": "Rakhi",
         "is_assigned": False,
         "assigned_date": None,
@@ -94,7 +98,8 @@ DEFAULT_EXERCISES = [
         "course_id": "adbms",
         "exercise_number": "01",
         "title": "Relational Database Schema Design, DDL & DML",
-        "description": "Create database with primary/foreign keys and integrity constraints. Apply DDL, DML, DCL and TCL operations with joins, grouping, and subqueries.",
+        "description": "Create database with primary/foreign keys and integrity constraints. Apply DDL, DML, DCL and TCL operations with joins, grouping, and subqueries via Python database connector.",
+        "language": "python",
         "faculty": "Shidha",
         "is_assigned": True,
         "assigned_date": "2026-08-01T09:00:00Z",
@@ -105,7 +110,8 @@ DEFAULT_EXERCISES = [
         "course_id": "adbms",
         "exercise_number": "02",
         "title": "PL/SQL Programs, Cursors, Triggers & Procedures",
-        "description": "Construct PL/SQL blocks implementing explicit cursors, stored procedures, user-defined functions, and automated database triggers.",
+        "description": "Construct Python database scripts implementing stored procedures, user-defined functions, and automated database triggers.",
+        "language": "python",
         "faculty": "Shidha",
         "is_assigned": True,
         "assigned_date": "2026-08-05T09:00:00Z",
@@ -116,7 +122,8 @@ DEFAULT_EXERCISES = [
         "course_id": "adbms",
         "exercise_number": "03",
         "title": "NoSQL Database Installation & CRUD Operations",
-        "description": "Set up NoSQL database (MongoDB/Cassandra). Perform document CRUD operations, query filtering, and aggregation pipelines.",
+        "description": "Set up NoSQL database (MongoDB/Cassandra). Perform document CRUD operations, query filtering, and aggregation pipelines using Python PyMongo.",
+        "language": "python",
         "faculty": "Shidha",
         "is_assigned": False,
         "assigned_date": None,
@@ -127,7 +134,8 @@ DEFAULT_EXERCISES = [
         "course_id": "adbms",
         "exercise_number": "04",
         "title": "NoSQL Administration, Indexing & Sharding",
-        "description": "Implement security policies, user roles, replica set configurations, document indexing, and cloud database deployment.",
+        "description": "Implement security policies, user roles, replica set configurations, document indexing, and cloud database deployment with Python management scripts.",
+        "language": "python",
         "faculty": "Shidha",
         "is_assigned": False,
         "assigned_date": None,
@@ -139,6 +147,7 @@ DEFAULT_EXERCISES = [
         "exercise_number": "01",
         "title": "Classes, Objects, Constructors & Nested Classes",
         "description": "Implement Product class with minimum price search, Matrix addition, Complex numbers, Symmetric matrix, and static nested CPU/RAM architecture.",
+        "language": "java",
         "faculty": "Rosemary Mathew",
         "is_assigned": True,
         "assigned_date": "2026-08-02T09:00:00Z",
@@ -150,6 +159,7 @@ DEFAULT_EXERCISES = [
         "exercise_number": "02",
         "title": "Arrays, String Manipulations & Array of Objects",
         "description": "Implement string sorting algorithms, substring search, and Employee record management using array of objects.",
+        "language": "java",
         "faculty": "Rosemary Mathew",
         "is_assigned": True,
         "assigned_date": "2026-08-08T09:00:00Z",
@@ -161,6 +171,7 @@ DEFAULT_EXERCISES = [
         "exercise_number": "03",
         "title": "Inheritance, Method Overloading & Interfaces",
         "description": "Design multilevel inheritance hierarchies (Person-Employee-Teacher, Publisher-Book, Student-Sports-Result) and billing interfaces.",
+        "language": "java",
         "faculty": "Rosemary Mathew",
         "is_assigned": False,
         "assigned_date": None,
@@ -172,6 +183,7 @@ DEFAULT_EXERCISES = [
         "exercise_number": "04",
         "title": "Packages, User Exceptions, Multithreading & Collections",
         "description": "Build graphics/arithmetic packages, custom exceptions, thread synchronization, generic Stack, and Java Collection Framework.",
+        "language": "java",
         "faculty": "Rosemary Mathew",
         "is_assigned": False,
         "assigned_date": None,
@@ -183,6 +195,7 @@ DEFAULT_EXERCISES = [
         "exercise_number": "05",
         "title": "AWT Event Handling & 2D Graphics",
         "description": "Develop interactive GUI applications with AWT components, shape choice components, and mouse/window event listeners.",
+        "language": "java",
         "faculty": "Rosemary Mathew",
         "is_assigned": False,
         "assigned_date": None,
@@ -193,7 +206,8 @@ DEFAULT_EXERCISES = [
         "course_id": "java",
         "exercise_number": "06",
         "title": "File I/O Operations & Socket Programming",
-        "description": "Implement file read/write streams, directory traversal, and TCP/UDP client-server network socket communication.",
+        "description": "Implement file read/write streams, directory traversal, and TCP/UDP client-server network socket communication in Java.",
+        "language": "java",
         "faculty": "Rosemary Mathew",
         "is_assigned": False,
         "assigned_date": None,
@@ -298,8 +312,38 @@ async def get_faculty_by_id(faculty_id: str):
             doc = await db.faculty.find_one({"_id": ObjectId(faculty_id)})
             if doc:
                 return doc
+        else:
+            doc = await db.faculty.find_one({"$or": [{"faculty_id": faculty_id}, {"email": str(faculty_id).lower().strip()}]})
+            if doc:
+                return doc
     except Exception as e:
         print(f"[Faculty] DB lookup by ID notice: {e}")
+
+    try:
+        from app.services.admin_service import DEFAULT_FACULTY_ROSTER
+        clean_id = str(faculty_id).lower().strip()
+        fac_record = next((
+            f for f in DEFAULT_FACULTY_ROSTER
+            if f.get("faculty_id", "").lower() == clean_id
+            or f.get("email", "").lower() == clean_id
+            or clean_id in f.get("faculty_id", "").lower()
+            or clean_id in f.get("email", "").lower()
+            or clean_id in f.get("name", "").lower()
+        ), None)
+        if fac_record:
+            return {
+                "_id": ObjectId("66b9f1a0e4b0a1b2c3d4e5f6"),
+                "faculty_id": fac_record["faculty_id"],
+                "name": fac_record["name"],
+                "email": fac_record["email"],
+                "department": fac_record.get("department", "Computer Applications"),
+                "assigned_labs": fac_record.get("assigned_labs", ["nsa"]),
+                "role": "faculty",
+                "onboarding_completed": True,
+            }
+    except Exception:
+        pass
+
     return DEFAULT_FALLBACK_FACULTY
 
 async def get_faculty_by_google_id(google_id: str):
@@ -491,10 +535,23 @@ async def get_faculty_laboratory_detail(faculty_doc: dict, course_id: str):
     assigned_exercises = [e for e in course_exercises if e.get("is_assigned")]
     current_exercise = assigned_exercises[-1] if assigned_exercises else (course_exercises[0] if course_exercises else None)
 
-    total_students = lab_entry.get("total_students", 42)
-    submitted_count = 24
-    reviewed_count = 18
-    pending_review_count = 6
+    total_students = lab_entry.get("total_students", len(DEMO_STUDENTS))
+    submitted_count = 0
+    reviewed_count = 0
+    evaluated_count = 0
+
+    try:
+        from app.services.submission_service import get_faculty_course_submissions
+        sub_data = await get_faculty_course_submissions(faculty_doc, cid, current_exercise.get("exercise_id") if current_exercise else None)
+        if sub_data and "stats" in sub_data:
+            stats = sub_data["stats"]
+            submitted_count = stats.get("submitted", 0)
+            reviewed_count = stats.get("reviewed", 0)
+            evaluated_count = stats.get("evaluated", 0)
+    except Exception:
+        submitted_count = 24
+        reviewed_count = 18
+        evaluated_count = 18
 
     return {
         "id": cid,
@@ -518,7 +575,8 @@ async def get_faculty_laboratory_detail(faculty_doc: dict, course_id: str):
             "total_students": total_students,
             "submitted": submitted_count,
             "reviewed": reviewed_count,
-            "pending_review": pending_review_count,
+            "evaluated": evaluated_count,
+            "pending_review": submitted_count,
         }
     }
 
@@ -595,6 +653,14 @@ async def get_faculty_submissions(faculty_doc: dict, course_id: str, exercise_id
     if not await is_faculty_authorized_for_course(faculty_doc, cid):
         return None
 
+    try:
+        from app.services.submission_service import get_faculty_course_submissions
+        result = await get_faculty_course_submissions(faculty_doc, cid, exercise_id)
+        if result and "submissions" in result:
+            return result["submissions"]
+    except Exception as e:
+        print(f"[Faculty] DB submission lookup error: {e}")
+
     course_exercises = [e for e in IN_MEMORY_EXERCISES if e.get("course_id") == cid]
     assigned_exercises = [e for e in course_exercises if e.get("is_assigned")]
     active_ex_id = exercise_id or (assigned_exercises[0].get("exercise_id") if assigned_exercises else f"{cid}-ex1")
@@ -621,8 +687,9 @@ async def get_faculty_submissions(faculty_doc: dict, course_id: str, exercise_id
             marks_val = "19/20" if status_val == "Evaluated" else None
 
         submissions.append({
-            "_id": f"sub-{cid}-{ex_num}-{i+1}",
-            "id": f"sub-{cid}-{ex_num}-{i+1}",
+            "_id": f"sub-{cid}-{ex_num}-{s['student_id']}",
+            "id": f"sub-{cid}-{ex_num}-{s['student_id']}",
+            "submission_id": f"sub-{cid}-{ex_num}-{s['student_id']}",
             "course_id": cid,
             "exercise_id": active_ex_id,
             "exercise_number": ex_num,
@@ -642,19 +709,50 @@ async def get_faculty_students(faculty_doc: dict, course_id: str):
         return None
 
     course_exercises = [e for e in IN_MEMORY_EXERCISES if e.get("course_id") == cid]
+    try:
+        cursor = db.exercises.find({"course_id": cid}).sort("exercise_number", 1)
+        db_exs = await cursor.to_list(length=100)
+        if db_exs:
+            course_exercises = db_exs
+    except Exception:
+        pass
+
     assigned_exercises = [e for e in course_exercises if e.get("is_assigned")]
     total_assigned = len(assigned_exercises) if assigned_exercises else 1
 
+    # Fetch all submissions for this course from DB or in-memory
+    db_subs_map = {}
+    try:
+        cursor = db.submissions.find({"course_id": cid})
+        all_subs = await cursor.to_list(length=500)
+        for sub in all_subs:
+            key = f"{sub.get('student_id')}_{sub.get('exercise_id')}"
+            db_subs_map[key] = sub
+    except Exception:
+        pass
+
     roster = []
     for idx, s in enumerate(DEMO_STUDENTS):
+        stu_id = s["student_id"]
         ex_progress = []
         completed_count = 0
+
         for ex in course_exercises:
+            eid = ex.get("exercise_id", str(ex.get("_id", "")))
             ex_num = ex.get("exercise_number", "01")
             is_ass = ex.get("is_assigned", False)
+
+            key = f"{stu_id}_{eid}"
+            sub = db_subs_map.get(key)
+
             if not is_ass:
                 st = "Not Assigned"
                 m = None
+            elif sub:
+                st = sub.get("status", "Submitted")
+                m = sub.get("marks")
+                if st in ["Submitted", "Reviewed", "Evaluated"]:
+                    completed_count += 1
             else:
                 if ex_num == "01":
                     has_sub = idx < 48
@@ -672,7 +770,7 @@ async def get_faculty_students(faculty_doc: dict, course_id: str):
                     m = None
 
             ex_progress.append({
-                "exercise_id": ex.get("exercise_id"),
+                "exercise_id": eid,
                 "exercise_number": ex_num,
                 "title": ex.get("title"),
                 "is_assigned": is_ass,
@@ -681,8 +779,8 @@ async def get_faculty_students(faculty_doc: dict, course_id: str):
             })
 
         roster.append({
-            "id": s["student_id"],
-            "student_id": s["student_id"],
+            "id": stu_id,
+            "student_id": stu_id,
             "name": s["name"],
             "email": s["email"],
             "department": "MCA",

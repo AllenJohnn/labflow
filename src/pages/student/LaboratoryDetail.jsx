@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ExternalLink, User } from "lucide-react";
+import { ArrowLeft, ExternalLink, User, ChevronRight } from "lucide-react";
 import StudentLayout from "../../components/layout/StudentLayout";
+import StudentSubmissionModal from "../../components/student/StudentSubmissionModal";
 import {
   getStudentLaboratories,
   getAssignedExercisesByCourse,
@@ -19,6 +20,8 @@ export default function LaboratoryDetail() {
   });
   const [exercises, setExercises] = useState([]);
   const [announcements, setAnnouncements] = useState(() => getCachedAnnouncements() || []);
+  const [selectedExerciseForModal, setSelectedExerciseForModal] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -46,7 +49,7 @@ export default function LaboratoryDetail() {
     return () => {
       isMounted = false;
     };
-  }, [subjectId]);
+  }, [subjectId, refreshKey]);
 
   const syllabusUrl = lab?.syllabusUrl || `/syllabi/${(lab?.code || subjectId || "NSA").toUpperCase()}-Syllabus-Demo.pdf`;
   const assignedCount = exercises.length;
@@ -94,9 +97,14 @@ export default function LaboratoryDetail() {
 
         <div className="border border-slate-200/80 bg-white p-6 shadow-2xs">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-[16px] font-semibold text-slate-800 tracking-tight">
-              Laboratory Exercises
-            </h2>
+            <div>
+              <h2 className="text-[16px] font-semibold text-slate-800 tracking-tight">
+                Laboratory Exercises
+              </h2>
+              <p className="text-[12px] text-slate-500">
+                Click any exercise to view details, submit code, or view faculty evaluation.
+              </p>
+            </div>
             <span className="text-[12px] font-medium text-slate-500">
               {assignedCount === 0
                 ? "No exercises assigned"
@@ -113,41 +121,57 @@ export default function LaboratoryDetail() {
               {exercises.map((ex) => (
                 <div
                   key={ex.id}
-                  className="group flex flex-wrap items-center justify-between gap-4 py-3.5 px-2 transition hover:bg-slate-50/70 cursor-pointer"
+                  onClick={() => setSelectedExerciseForModal(ex)}
+                  className="group flex flex-wrap items-center justify-between gap-4 py-3.5 px-3 transition hover:bg-[#f0f4fa]/40 border-l-2 border-transparent hover:border-[#164a9c] cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-8 w-8 items-center justify-center bg-[#f0f4fa] border border-[#164a9c]/15 text-[12px] font-bold text-[#164a9c]">
-                      {ex.exerciseNumber}
+                      {ex.exerciseNumber || ex.exercise_number}
                     </span>
                     <div>
                       <h4 className="text-[14px] font-semibold text-slate-800 group-hover:text-[#164a9c] transition-colors">
                         {ex.title}
                       </h4>
                       <p className="text-[11px] text-slate-400">
-                        Assigned by {ex.faculty}
+                        Assigned by {ex.faculty} {ex.dueDate ? `· Due: ${ex.dueDate}` : ""}
                       </p>
                     </div>
                   </div>
 
-                  <span
-                    className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
-                      ex.status === "Evaluated"
-                        ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
-                        : ex.status === "Reviewed"
-                        ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
-                        : ex.status === "Submitted"
-                        ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                        : "bg-slate-100 text-slate-600 border-slate-200"
-                    }`}
-                  >
-                    {ex.status}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
+                        ex.status === "Evaluated"
+                          ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
+                          : ex.status === "Reviewed"
+                          ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
+                          : ex.status === "Submitted"
+                          ? "bg-amber-50 text-amber-800 border-amber-200"
+                          : "bg-slate-100 text-slate-600 border-slate-200"
+                      }`}
+                    >
+                      {ex.status} {ex.marks ? `(${ex.marks})` : ""}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#164a9c] transition-colors" />
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {selectedExerciseForModal && (
+        <StudentSubmissionModal
+          exercise={selectedExerciseForModal}
+          isOpen={Boolean(selectedExerciseForModal)}
+          onClose={() => setSelectedExerciseForModal(null)}
+          onSubmitted={() => {
+            setRefreshKey((k) => k + 1);
+          }}
+        />
+      )}
     </StudentLayout>
   );
 }
+

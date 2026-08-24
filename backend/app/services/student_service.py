@@ -50,8 +50,29 @@ async def get_student_by_id(student_db_id: str):
             doc = await db.students.find_one({"_id": ObjectId(student_db_id)})
             if doc:
                 return doc
+        else:
+            doc = await db.students.find_one({"$or": [{"student_id": student_db_id}, {"email": student_db_id.lower().strip()}]})
+            if doc:
+                return doc
     except Exception as e:
         print(f"[Student] DB lookup by ID notice: {e}")
+
+    from app.services.faculty_service import DEMO_STUDENTS
+    clean_id = str(student_db_id).lower().strip()
+    found_stu = next((s for s in DEMO_STUDENTS if s.get("student_id", "").lower() == clean_id or s.get("email", "").lower() == clean_id), None)
+    if found_stu:
+        return {
+            "_id": ObjectId("66b9f1a0e4b0a1b2c3d4e5f7"),
+            "name": found_stu["name"],
+            "email": found_stu["email"],
+            "student_id": found_stu["student_id"],
+            "department": "MCA",
+            "semester": 3,
+            "role": "student",
+            "github_username": found_stu["name"].lower().replace(" ", ""),
+            "onboarding_completed": True,
+        }
+
     return DEFAULT_FALLBACK_STUDENT
 
 async def create_student(data: dict):
@@ -195,10 +216,21 @@ async def get_student_assigned_laboratories():
         })
     return result
 
-async def get_student_assigned_exercises(course_id: str | None = None):
+async def get_student_assigned_exercises(course_id: str | None = None, student_doc: dict | None = None):
     from app.services.faculty_service import IN_MEMORY_EXERCISES
+    from app.services.submission_service import get_student_submissions
 
     cid = course_id.lower().strip() if course_id else None
+
+    # Retrieve student's submissions to attach accurate status
+    stu_submissions_map = {}
+    if student_doc:
+        try:
+            subs = await get_student_submissions(student_doc)
+            for s in subs:
+                stu_submissions_map[s.get("exercise_id")] = s
+        except Exception:
+            pass
 
     try:
         query = {"is_assigned": True}
@@ -209,17 +241,31 @@ async def get_student_assigned_exercises(course_id: str | None = None):
         if db_exs:
             result = []
             for ex in db_exs:
+                eid = ex.get("exercise_id", str(ex["_id"]))
+                sub = stu_submissions_map.get(eid)
+                sub_status = sub.get("status") if sub else "Not Submitted"
+                ex_lang = ex.get("language") or ("c" if ex.get("course_id") == "nsa" else ("python" if ex.get("course_id") == "adbms" else "java"))
                 result.append({
-                    "id": ex.get("exercise_id", str(ex["_id"])),
+                    "id": eid,
+                    "exercise_id": eid,
                     "courseId": ex.get("course_id"),
+                    "course_id": ex.get("course_id"),
                     "exerciseNumber": ex.get("exercise_number"),
+                    "exercise_number": ex.get("exercise_number"),
                     "title": ex.get("title"),
                     "description": ex.get("description", ""),
+                    "language": ex_lang,
                     "faculty": ex.get("faculty"),
                     "isAssigned": True,
+                    "is_assigned": True,
                     "assignedDate": ex.get("assigned_date"),
-                    "status": "Not Started",
+                    "assigned_date": ex.get("assigned_date"),
+                    "status": sub_status,
                     "dueDate": ex.get("due_date"),
+                    "due_date": ex.get("due_date"),
+                    "submission": sub,
+                    "marks": sub.get("marks") if sub else None,
+                    "feedback": sub.get("feedback") if sub else None,
                 })
             return result
     except Exception as e:
@@ -228,17 +274,31 @@ async def get_student_assigned_exercises(course_id: str | None = None):
     result = []
     for ex in IN_MEMORY_EXERCISES:
         if ex.get("is_assigned") and (not cid or ex.get("course_id") == cid):
+            eid = ex.get("exercise_id", "ex-1")
+            sub = stu_submissions_map.get(eid)
+            sub_status = sub.get("status") if sub else "Not Submitted"
+            ex_lang = ex.get("language") or ("c" if ex.get("course_id") == "nsa" else ("python" if ex.get("course_id") == "adbms" else "java"))
             result.append({
-                "id": ex.get("exercise_id", "ex-1"),
+                "id": eid,
+                "exercise_id": eid,
                 "courseId": ex.get("course_id"),
+                "course_id": ex.get("course_id"),
                 "exerciseNumber": ex.get("exercise_number"),
+                "exercise_number": ex.get("exercise_number"),
                 "title": ex.get("title"),
                 "description": ex.get("description", ""),
+                "language": ex_lang,
                 "faculty": ex.get("faculty"),
                 "isAssigned": True,
+                "is_assigned": True,
                 "assignedDate": ex.get("assigned_date"),
-                "status": "Not Started",
+                "assigned_date": ex.get("assigned_date"),
+                "status": sub_status,
                 "dueDate": ex.get("due_date"),
+                "due_date": ex.get("due_date"),
+                "submission": sub,
+                "marks": sub.get("marks") if sub else None,
+                "feedback": sub.get("feedback") if sub else None,
             })
     return result
 

@@ -48,6 +48,28 @@ async def update_profile(
         "data": updated_student
     }
 
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+from app.core.languages import ALLOWED_LANGUAGES, is_allowed_language
+
+class StudentSubmissionCreateSchema(BaseModel):
+    code: str = Field(..., min_length=1, description="Source code content for submission")
+    language: str | None = Field(default=None, description="Programming language: c, java, or python")
+    comments: str | None = Field(default="", description="Optional student comments")
+
+    model_config = ConfigDict(extra="ignore")
+
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, v: str | None) -> str | None:
+        if v is not None:
+            clean = v.strip().lower()
+            if clean not in ALLOWED_LANGUAGES:
+                raise ValueError(
+                    f"Unsupported programming language '{v}'. LabFlow supports only: C ('c'), Java ('java'), Python ('python')."
+                )
+            return clean
+        return v
+
 @router.get("/laboratories")
 async def get_student_laboratories_route(current_student: dict = Depends(get_current_student)):
     labs = await get_student_assigned_laboratories()
@@ -61,7 +83,7 @@ async def get_student_course_exercises_route(
     course_id: str,
     current_student: dict = Depends(get_current_student)
 ):
-    exercises = await get_student_assigned_exercises(course_id)
+    exercises = await get_student_assigned_exercises(course_id, current_student)
     return {
         "status": "success",
         "data": exercises
@@ -69,10 +91,62 @@ async def get_student_course_exercises_route(
 
 @router.get("/exercises")
 async def get_all_student_exercises_route(current_student: dict = Depends(get_current_student)):
-    exercises = await get_student_assigned_exercises()
+    exercises = await get_student_assigned_exercises(None, current_student)
     return {
         "status": "success",
         "data": exercises
+    }
+
+@router.get("/submissions")
+async def get_my_submissions_route(current_student: dict = Depends(get_current_student)):
+    from app.services.submission_service import get_student_submissions
+    submissions = await get_student_submissions(current_student)
+    return {
+        "status": "success",
+        "data": submissions
+    }
+
+@router.get("/exercises/{exercise_id}/submission")
+async def get_my_exercise_submission_route(
+    exercise_id: str,
+    current_student: dict = Depends(get_current_student)
+):
+    from app.services.submission_service import get_student_exercise_submission
+    sub = await get_student_exercise_submission(current_student, exercise_id)
+    return {
+        "status": "success",
+        "data": sub
+    }
+
+@router.post("/exercises/{exercise_id}/submit")
+async def submit_exercise_work_route(
+    exercise_id: str,
+    payload: StudentSubmissionCreateSchema,
+    current_student: dict = Depends(get_current_student)
+):
+    from app.services.submission_service import create_or_update_submission
+    result = await create_or_update_submission(current_student, exercise_id, payload.model_dump())
+
+    if result["status"] == "not_found":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=result["message"]
+        )
+    elif result["status"] == "not_assigned":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+    elif result["status"] == "invalid_language":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+    return {
+        "status": "success",
+        "message": result["message"],
+        "data": result["data"]
     }
 
 class LabCheckInSchema(BaseModel):

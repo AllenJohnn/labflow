@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import FacultyLayout from "../../components/layout/FacultyLayout";
+import FacultyEvaluationModal from "../../components/faculty/FacultyEvaluationModal";
 import {
   getFacultyProfile,
   getFacultyLaboratoryDetail,
@@ -52,6 +53,7 @@ export default function FacultyLaboratoryDetail() {
   const [studentSearch, setStudentSearch] = useState("");
   const [studentViewMode, setStudentViewMode] = useState("roster");
   const [selectedStudentForModal, setSelectedStudentForModal] = useState(null);
+  const [selectedSubForEval, setSelectedSubForEval] = useState(null);
 
   const [assigningId, setAssigningId] = useState(null);
   const [isAnnModalOpen, setIsAnnModalOpen] = useState(false);
@@ -700,16 +702,25 @@ export default function FacultyLaboratoryDetail() {
                           </span>
                         </td>
                         <td className="px-5 py-3.5 text-right">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const foundStudent = students.find((s) => s.student_id === sub.student_id);
-                              if (foundStudent) setSelectedStudentForModal(foundStudent);
-                            }}
-                            className="text-[12px] font-medium text-[#164a9c] hover:underline cursor-pointer"
-                          >
-                            View Student History
-                          </button>
+                          <div className="flex items-center justify-end gap-2.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSubForEval(sub)}
+                              className="bg-[#164a9c] hover:bg-[#123877] text-white px-2.5 py-1 text-[11.5px] font-semibold transition cursor-pointer shadow-2xs"
+                            >
+                              {sub.status === "Evaluated" ? "Edit Evaluation" : "Review / Evaluate"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const foundStudent = students.find((s) => s.student_id === sub.student_id);
+                                if (foundStudent) setSelectedStudentForModal(foundStudent);
+                              }}
+                              className="text-[12px] font-medium text-slate-500 hover:text-[#164a9c] hover:underline cursor-pointer"
+                            >
+                              History
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -1091,7 +1102,34 @@ export default function FacultyLaboratoryDetail() {
             </div>
           </div>
         )}
+
+        {/* Faculty Evaluation Modal */}
+        {selectedSubForEval && (
+          <FacultyEvaluationModal
+            submission={selectedSubForEval}
+            isOpen={Boolean(selectedSubForEval)}
+            onClose={() => setSelectedSubForEval(null)}
+            onEvaluated={(updatedSub) => {
+              setSubmissions((prev) =>
+                prev.map((s) => {
+                  const matches =
+                    s.id === updatedSub.id ||
+                    s.submission_id === updatedSub.submission_id ||
+                    (s.student_id === updatedSub.student_id && s.exercise_id === updatedSub.exercise_id);
+                  return matches ? { ...s, ...updatedSub } : s;
+                })
+              );
+              getFacultyStudents(normalizedId, true).then((stus) => {
+                if (stus) setStudents(stus);
+              });
+              getFacultyLaboratoryDetail(normalizedId, true).then((ld) => {
+                if (ld) setLab(ld);
+              });
+            }}
+          />
+        )}
       </div>
     </FacultyLayout>
   );
 }
+

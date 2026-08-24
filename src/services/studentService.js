@@ -335,31 +335,87 @@ export const getStudentAnnouncements = async () => {
   return cachedAnnouncements;
 };
 
+export const getStudentSubmissions = async () => {
+  try {
+    const res = await api.get("/student/submissions");
+    if (res.data && res.data.data) {
+      return res.data.data;
+    }
+  } catch (err) {
+    console.error("Error fetching student submissions:", err);
+  }
+  return [];
+};
+
+export const getStudentExerciseSubmission = async (exerciseId) => {
+  try {
+    const res = await api.get(`/student/exercises/${exerciseId}/submission`);
+    if (res.data && res.data.data) {
+      return res.data.data;
+    }
+  } catch (err) {
+    console.error(`Error fetching submission for exercise ${exerciseId}:`, err);
+  }
+  return null;
+};
+
+export const submitExerciseWork = async (exerciseId, submissionData) => {
+  try {
+    const res = await api.post(`/student/exercises/${exerciseId}/submit`, submissionData);
+    clearStudentCache();
+    return res.data;
+  } catch (err) {
+    console.error(`Error submitting work for exercise ${exerciseId}:`, err);
+    throw err;
+  }
+};
+
 export const getStudentRecentActivity = async () => {
+  try {
+    const subs = await getStudentSubmissions();
+    if (subs && subs.length > 0) {
+      return subs.slice(0, 5).map((s) => ({
+        id: s.id || s.submission_id,
+        subjectCode: s.course_code || (s.course_id ? s.course_id.toUpperCase() : "LAB"),
+        title: `Exercise ${s.exercise_number}: ${s.exercise_title || "Laboratory Exercise"}`,
+        timestamp: s.submitted_date_display || (s.submitted_at ? new Date(s.submitted_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Recently"),
+        status: s.status || "Submitted",
+        marks: s.marks,
+        feedback: s.feedback,
+        submission: s,
+      }));
+    }
+  } catch {
+    // fallback to cache
+  }
+
   if (cachedActivity) {
     return cachedActivity;
   }
   cachedActivity = [
     {
       id: "act-1",
-      subjectCode: "DBMS",
-      title: "Exercise 02: Complex SQL Joins & Subqueries",
-      timestamp: "Yesterday",
+      subjectCode: "NSA",
+      title: "Exercise 01: Directory Tree & Linux File Operations",
+      timestamp: "Aug 10",
       status: "Evaluated",
+      marks: "19/20",
     },
     {
       id: "act-2",
-      subjectCode: "JAVA",
-      title: "Exercise 02: Custom Exception Handling",
-      timestamp: "Aug 10",
-      status: "Reviewed",
+      subjectCode: "ADBMS",
+      title: "Exercise 01: Relational Database Schema Design, DDL & DML",
+      timestamp: "Aug 05",
+      status: "Evaluated",
+      marks: "20/20",
     },
     {
       id: "act-3",
       subjectCode: "JAVA",
-      title: "Exercise 01: Multithreaded Producer-Consumer",
-      timestamp: "Aug 05",
+      title: "Exercise 01: Classes, Objects, Constructors & Nested Classes",
+      timestamp: "Aug 06",
       status: "Evaluated",
+      marks: "18/20",
     },
   ];
   return cachedActivity;
@@ -396,3 +452,4 @@ export const checkInStudentAttendance = async (courseId = null) => {
     throw err;
   }
 };
+

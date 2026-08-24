@@ -259,7 +259,7 @@ export const getFacultySubmissions = async (courseId, exerciseId = null, forceRe
   }
 
   try {
-    const url = exerciseId
+    const url = exerciseId && exerciseId !== "all"
       ? `/faculty/laboratories/${cid}/submissions?exercise_id=${exerciseId}`
       : `/faculty/laboratories/${cid}/submissions`;
     const res = await api.get(url);
@@ -286,6 +286,7 @@ export const getFacultySubmissions = async (courseId, exerciseId = null, forceRe
 
   cachedSubmissions[cacheKey] = students.map((s, idx) => ({
     id: `sub-${idx + 1}`,
+    submission_id: `sub-${idx + 1}`,
     student_name: s.name,
     student_id: s.student_id,
     exercise_number: "01",
@@ -296,6 +297,36 @@ export const getFacultySubmissions = async (courseId, exerciseId = null, forceRe
 
   return cachedSubmissions[cacheKey];
 };
+
+export const getFacultySubmissionDetail = async (submissionId) => {
+  try {
+    const res = await api.get(`/faculty/submissions/${submissionId}`);
+    if (res.data && res.data.data) {
+      return res.data.data;
+    }
+  } catch (err) {
+    console.error(`Error fetching submission ${submissionId}:`, err);
+  }
+  return null;
+};
+
+export const evaluateFacultySubmission = async (submissionId, evaluationData, courseId = null) => {
+  try {
+    const url = courseId
+      ? `/faculty/laboratories/${courseId}/submissions/${submissionId}/evaluate`
+      : `/faculty/submissions/${submissionId}/evaluate`;
+    const res = await api.put(url, evaluationData);
+    // Invalidate caches
+    cachedSubmissions = {};
+    cachedLabDetails = {};
+    cachedStudents = {};
+    return res.data;
+  } catch (err) {
+    console.error(`Error evaluating submission ${submissionId}:`, err);
+    throw err;
+  }
+};
+
 
 export const getFacultyStudents = async (courseId, forceRefresh = false) => {
   const cid = (courseId || "nsa").toLowerCase();

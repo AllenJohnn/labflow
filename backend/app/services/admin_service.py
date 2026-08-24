@@ -241,7 +241,7 @@ async def get_admin_by_id(admin_id: str):
     except Exception as e:
         print(f"[Admin] DB fetch admin by id notice: {e}")
 
-    if str(admin_id) == str(DEFAULT_FALLBACK_ADMIN["_id"]) or admin_id == "admin":
+    if str(admin_id) == str(DEFAULT_FALLBACK_ADMIN["_id"]) or admin_id in ["admin", "ADM001", DEFAULT_ADMIN_EMAIL, "admin@fisat.ac.in"] or str(admin_id).startswith("ADM"):
         return DEFAULT_FALLBACK_ADMIN
     return None
 

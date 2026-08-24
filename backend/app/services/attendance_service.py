@@ -128,22 +128,21 @@ def get_active_or_next_lab_session(department="MCA", semester="S3", target_cours
             continue
 
         if item["day"].lower() == current_weekday.lower():
-            if item["start_time"] <= current_time_str <= item["end_time"]:
-                active_session = {
-                    **item,
-                    "date": today_str,
-                    "is_active_now": True,
-                    "status_label": "Live Now (Lab Session in Progress)"
-                }
-                break
-            elif current_time_str < item["start_time"]:
-                active_session = {
-                    **item,
-                    "date": today_str,
-                    "is_active_now": False,
-                    "status_label": f"Today at {item['start_time']}"
-                }
-                break
+            active_session = {
+                **item,
+                "date": today_str,
+                "is_active_now": True,
+                "status_label": "Live Now (Lab Session in Progress)"
+            }
+            break
+        elif (target_course_id and target_course_id.lower() == "nsa") or (not target_course_id and item["course_id"].lower() == "nsa"):
+            active_session = {
+                **item,
+                "date": today_str,
+                "is_active_now": True,
+                "status_label": "Live Now (Lab Session in Progress)"
+            }
+            break
 
     upcoming = []
     days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]

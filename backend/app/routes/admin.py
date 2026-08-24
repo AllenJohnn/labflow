@@ -326,3 +326,17 @@ async def toggle_maintenance_mode(
         "message": f"Maintenance mode has been {'enabled' if is_enabled else 'disabled'}",
         "data": res
     }
+
+@router.post("/seed-submissions")
+async def seed_submissions_route(
+    payload: dict | None = None,
+    current_admin: dict = Depends(get_current_admin)
+):
+    from app.services.submission_service import seed_demo_submissions
+    force_reset = payload.get("force_reset", False) if payload else False
+    res = await seed_demo_submissions(force_reset=force_reset)
+    return {
+        "status": "success",
+        "message": "Demo submissions dataset seeded successfully",
+        "data": res
+    }

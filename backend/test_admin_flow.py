@@ -1,14 +1,16 @@
 import asyncio
 import httpx
+from app.main import app
 
-BASE_URL = "http://127.0.0.1:8000/api/v1"
+BASE_URL = "http://testserver/api/v1"
 
 async def run_tests():
     print("\n=======================================================")
     print("STARTING LABFLOW ADMIN & ROLE AUTHORIZATION TEST SUITE")
     print("=======================================================\n")
 
-    async with httpx.AsyncClient(base_url=BASE_URL, timeout=10.0) as client:
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url=BASE_URL, timeout=12.0) as client:
         print("1. Testing Admin Authentication...")
         admin_login = await client.post("/auth/admin/login", json={"email": "admin@fisat.ac.in", "password": "admin123"})
         assert admin_login.status_code == 200, f"Admin login failed: {admin_login.text}"

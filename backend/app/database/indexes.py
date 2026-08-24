@@ -19,3 +19,9 @@ async def create_indexes():
     await safe_create_index(db.faculty, "department")
 
     await safe_create_index(db.admins, "email", unique=True, sparse=True)
+
+    await safe_create_index(db.submissions, "submission_id", unique=True, sparse=True)
+    await safe_create_index(db.submissions, [("student_id", 1), ("exercise_id", 1)])
+    await safe_create_index(db.submissions, [("course_id", 1), ("exercise_id", 1)])
+    await safe_create_index(db.submissions, [("course_id", 1), ("status", 1)])
+    await safe_create_index(db.submissions, "student_email")

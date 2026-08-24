@@ -139,6 +139,11 @@ async def assign_lab_exercise_nested(
         "data": updated
     }
 
+class SubmissionEvaluationSchema(BaseModel):
+    status: str = Field(default="Evaluated", description="Status (Evaluated, Reviewed, Submitted)")
+    marks: str | None = Field(default=None, description="Marks / Score awarded (e.g. 18/20)")
+    feedback: str | None = Field(default="", description="Faculty evaluation comments")
+
 @router.get("/laboratories/{course_id}/submissions")
 async def get_laboratory_submissions(
     course_id: str,
@@ -154,6 +159,69 @@ async def get_laboratory_submissions(
     return {
         "status": "success",
         "data": submissions
+    }
+
+@router.get("/submissions/{submission_id}")
+async def get_submission_detail_route(
+    submission_id: str,
+    current_faculty: dict = Depends(get_current_faculty)
+):
+    from app.services.submission_service import get_submission_by_id
+    sub = await get_submission_by_id(current_faculty, submission_id)
+    if sub == "unauthorized":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: You are not authorized to view this submission"
+        )
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Submission record not found"
+        )
+    return {
+        "status": "success",
+        "data": sub
+    }
+
+@router.put("/submissions/{submission_id}/evaluate")
+@router.post("/submissions/{submission_id}/evaluate")
+async def evaluate_submission_route(
+    submission_id: str,
+    payload: SubmissionEvaluationSchema,
+    current_faculty: dict = Depends(get_current_faculty)
+):
+    from app.services.submission_service import evaluate_submission
+    result = await evaluate_submission(current_faculty, submission_id, payload.model_dump())
+    if result["status"] == "unauthorized":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=result["message"]
+        )
+    return {
+        "status": "success",
+        "message": result["message"],
+        "data": result.get("data")
+    }
+
+@router.put("/laboratories/{course_id}/submissions/{submission_id}/evaluate")
+@router.post("/laboratories/{course_id}/submissions/{submission_id}/evaluate")
+async def evaluate_submission_nested_route(
+    course_id: str,
+    submission_id: str,
+    payload: SubmissionEvaluationSchema,
+    current_faculty: dict = Depends(get_current_faculty)
+):
+    from app.services.submission_service import evaluate_submission
+    result = await evaluate_submission(current_faculty, submission_id, payload.model_dump())
+    if result["status"] == "unauthorized":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=result["message"]
+        )
+    return {
+        "status": "success",
+        "message": result["message"],
+        "data": result.get("data")
     }
 
 @router.get("/laboratories/{course_id}/students")

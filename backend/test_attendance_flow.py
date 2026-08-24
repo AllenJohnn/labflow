@@ -1,14 +1,16 @@
 import asyncio
 import httpx
+from app.main import app
 
-BASE_URL = "http://127.0.0.1:8000/api/v1"
+BASE_URL = "http://testserver/api/v1"
 
 async def run_attendance_tests():
     print("\n=======================================================")
     print("STARTING POLISHED LABFLOW ATTENDANCE & TIMETABLE TEST SUITE")
     print("=======================================================\n")
 
-    async with httpx.AsyncClient(base_url=BASE_URL, timeout=12.0) as client:
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url=BASE_URL, timeout=12.0) as client:
         print("1. Testing Admin Authentication & Attendance Settings Configuration...")
         admin_login = await client.post("/auth/admin/login", json={
             "email": "admin@fisat.ac.in",
