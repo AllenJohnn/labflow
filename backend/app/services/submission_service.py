@@ -230,7 +230,12 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
     if not exercise:
         return {"status": "not_found", "message": f"Exercise '{eid}' was not found in the laboratory system."}
 
-    if not exercise.get("is_assigned"):
+    from app.config.settings import settings
+    stu_email = (student_doc.get("email") or "").lower().strip()
+    is_dev_student = settings.IDE_DEMO_MODE and (stu_email == settings.DEMO_STUDENT_EMAIL.lower() or not stu_email)
+    is_accessible = exercise.get("is_assigned") or (is_dev_student and eid in settings.DEMO_EXERCISE_IDS)
+
+    if not is_accessible:
         return {"status": "not_assigned", "message": f"Exercise '{exercise.get('title', eid)}' has not been assigned by faculty yet."}
 
     cid = exercise.get("course_id", "nsa").lower()

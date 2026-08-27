@@ -1,0 +1,19 @@
+FROM python:3.11-slim
+
+# Install C/C++ compiler and Java JDK
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        default-jdk && \
+    rm -rf /var/lib/apt/lists/*
+
+# Add a non-root user for extra security
+RUN useradd -m -s /bin/bash sandbox_user
+USER sandbox_user
+
+# Create workspace
+WORKDIR /sandbox
+
+# Command defaults to bash, though it will be overridden by the runner
+CMD ["/bin/bash"]

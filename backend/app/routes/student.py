@@ -118,6 +118,47 @@ async def get_my_exercise_submission_route(
         "data": sub
     }
 
+class ExecutionRequestSchema(BaseModel):
+    language: str = Field(..., description="Programming language: c, java, or python")
+    code: str = Field(..., description="Source code content to execute")
+    stdin: str = Field(default="", description="Optional standard input")
+    
+    model_config = ConfigDict(extra="ignore")
+    
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, v: str) -> str:
+        clean = v.strip().lower()
+        if clean not in ALLOWED_LANGUAGES:
+            raise ValueError(f"Unsupported language '{v}'. Allowed: {ALLOWED_LANGUAGES}")
+        return clean
+
+@router.post("/exercises/{exercise_id}/run")
+async def run_exercise_code_route(
+    exercise_id: str,
+    payload: ExecutionRequestSchema,
+    current_student: dict = Depends(get_current_student)
+):
+    from app.services.judge0_service import execute_code
+    
+    student_id = str(current_student["_id"])
+    
+    # We do NOT save executions to MongoDB. It is purely stateless.
+    result = await execute_code(
+        student_id=student_id,
+        language=payload.language,
+        code=payload.code,
+        stdin=payload.stdin
+    )
+    
+    # If Judge0/Execution service is not available, we return the graceful degradation object
+    # The frontend expects status = 'Service Unavailable' inside data.
+    
+    return {
+        "status": "success",
+        "data": result
+    }
+
 @router.post("/exercises/{exercise_id}/submit")
 async def submit_exercise_work_route(
     exercise_id: str,

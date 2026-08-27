@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { ChevronRight, Filter, BookOpen } from "lucide-react";
 import StudentLayout from "../../components/layout/StudentLayout";
 import StudentSubmissionModal from "../../components/student/StudentSubmissionModal";
@@ -78,44 +79,50 @@ export default function StudentExercises() {
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {filteredExercises.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedExerciseForModal(item)}
-                  className="group flex flex-wrap items-center justify-between gap-4 py-4 px-3 transition hover:bg-[#f0f4fa]/40 border-l-2 border-transparent hover:border-[#164a9c] cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="inline-block bg-[#f0f4fa] px-2.5 py-1 text-[11px] font-bold text-[#164a9c] border border-[#164a9c]/15 uppercase">
-                      {item.courseId || item.course_id}
-                    </span>
-                    <div>
-                      <h4 className="text-[14px] font-semibold text-slate-800 group-hover:text-[#164a9c] transition-colors">
-                        Exercise {item.exerciseNumber || item.exercise_number}: {item.title}
-                      </h4>
-                      <p className="text-[12px] text-slate-500">
-                        Faculty: {item.faculty} {item.dueDate ? `· Due: ${item.dueDate}` : ""}
-                      </p>
-                    </div>
-                  </div>
+              {filteredExercises.map((item) => {
+                const exId = item.id || item.exercise_id;
+                const cid = (item.courseId || item.course_id || "nsa").toLowerCase();
+                const ideLink = `/student/laboratories/${cid}/exercises/${exId}/ide`;
 
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
-                        item.status === "Evaluated"
-                          ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
-                          : item.status === "Reviewed"
-                          ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
-                          : item.status === "Submitted"
-                          ? "bg-amber-50 text-amber-800 border-amber-200"
-                          : "bg-slate-100 text-slate-600 border-slate-200"
-                      }`}
-                    >
-                      {item.status} {item.marks ? `(${item.marks})` : ""}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#164a9c] transition-colors" />
-                  </div>
-                </div>
-              ))}
+                return (
+                  <Link
+                    key={item.id || item.exercise_id}
+                    to={ideLink}
+                    className="group flex flex-wrap items-center justify-between gap-4 py-4 px-3 transition hover:bg-[#f0f4fa]/40 border-l-2 border-transparent hover:border-[#164a9c] cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block bg-[#f0f4fa] px-2.5 py-1 text-[11px] font-bold text-[#164a9c] border border-[#164a9c]/15 uppercase">
+                        {item.courseId || item.course_id}
+                      </span>
+                      <div>
+                        <h4 className="text-[14px] font-semibold text-slate-800 group-hover:text-[#164a9c] transition-colors">
+                          Exercise {item.exerciseNumber || item.exercise_number}: {item.title}
+                        </h4>
+                        <p className="text-[12px] text-slate-500">
+                          Faculty: {item.faculty} {item.dueDate ? `· Due: ${item.dueDate}` : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
+                          item.status === "Evaluated"
+                            ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
+                            : item.status === "Reviewed"
+                            ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
+                            : item.status === "Submitted"
+                            ? "bg-amber-50 text-amber-800 border-amber-200"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}
+                      >
+                        {item.status} {item.marks ? `(${item.marks})` : ""}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#164a9c] transition-colors" />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

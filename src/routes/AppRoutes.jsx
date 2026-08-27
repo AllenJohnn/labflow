@@ -9,6 +9,7 @@ import StudentDashboard from "../pages/student/Dashboard";
 import StudentLaboratories from "../pages/student/Laboratories";
 import LaboratoryDetail from "../pages/student/LaboratoryDetail";
 import StudentExercises from "../pages/student/Exercises";
+import StudentIDE from "../pages/student/StudentIDE";
 import StudentSubmissions from "../pages/student/Submissions";
 import StudentProfile from "../pages/student/Profile";
 import StudentAttendance from "../pages/student/Attendance";
@@ -64,6 +65,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["student"]}>
             <LaboratoryDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/laboratories/:courseId/exercises/:exerciseId/ide"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentIDE />
           </ProtectedRoute>
         }
       />

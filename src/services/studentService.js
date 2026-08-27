@@ -23,10 +23,11 @@ const ALL_EXERCISES = [
     exerciseNumber: "02",
     title: "Advanced Linux Filters, Find & Text Processing",
     faculty: "Rakhi",
-    isAssigned: false,
-    assignedDate: null,
+    language: "c",
+    isAssigned: true, // Exposed in development IDE demo mode
+    assignedDate: "2026-08-12",
     status: "Not Started",
-    dueDate: null,
+    dueDate: "2026-08-25",
   },
   {
     id: "nsa-ex3",

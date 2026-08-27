@@ -25,4 +25,17 @@ class Settings:
     SESSION_SECRET_KEY = os.getenv("SESSION_SECRET_KEY", "")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
+    # LabFlow Phase 2 IDE Demo Mode
+    IDE_DEMO_MODE = os.getenv("IDE_DEMO_MODE", "true").lower() in ("true", "1", "yes")
+    DEMO_EXERCISE_IDS = ["nsa-ex1", "nsa-ex2"]
+    DEMO_STUDENT_EMAIL = os.getenv("DEFAULT_STUDENT_EMAIL", "student@fisat.ac.in")
+
+    # LabFlow Phase 3 IDE Execution Sandbox (Judge0)
+    IDE_EXECUTION_ENABLED = os.getenv("IDE_EXECUTION_ENABLED", "true").lower() in ("true", "1", "yes")
+    JUDGE0_API_URL = os.getenv("JUDGE0_API_URL", "") # e.g. https://judge0-ce.p.rapidapi.com
+    JUDGE0_API_KEY = os.getenv("JUDGE0_API_KEY", "")
+    IDE_EXECUTION_TIMEOUT_SECONDS = float(os.getenv("IDE_EXECUTION_TIMEOUT_SECONDS", "5.0"))
+    IDE_MAX_OUTPUT_BYTES = int(os.getenv("IDE_MAX_OUTPUT_BYTES", "65536")) # 64KB
+    IDE_MEMORY_LIMIT_KB = int(os.getenv("IDE_MEMORY_LIMIT_KB", "128000")) # 128MB
+
 settings = Settings()

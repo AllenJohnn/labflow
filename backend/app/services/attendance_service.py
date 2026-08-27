@@ -69,8 +69,8 @@ DEFAULT_TIMETABLE = [
         "id": "tt-5",
         "day": "Thursday",
         "day_index": 3,
-        "start_time": "14:00",
-        "end_time": "16:30",
+        "start_time": "15:30",
+        "end_time": "17:30",
         "course_id": "adbms",
         "code": "20MCA134",
         "name": "ADBMS Query Optimization & Tuning Lab",
@@ -128,21 +128,28 @@ def get_active_or_next_lab_session(department="MCA", semester="S3", target_cours
             continue
 
         if item["day"].lower() == current_weekday.lower():
+            # Check if within time window or fallback for testing
+            start_t = item.get("start_time", "00:00")
+            end_t = item.get("end_time", "23:59")
+            if start_t <= current_time_str <= end_t:
+                active_session = {
+                    **item,
+                    "date": today_str,
+                    "is_active_now": True,
+                    "status_label": "Live Now (Lab Session in Progress)"
+                }
+                break
+
+    # For development/demo testing simulations, if target is explicitly NSA, simulate NSA as active session
+    if not active_session and ((target_course_id and target_course_id.lower() == "nsa") or not target_course_id):
+        nsa_item = next((item for item in DEFAULT_TIMETABLE if item["course_id"].lower() == "nsa"), None)
+        if nsa_item:
             active_session = {
-                **item,
+                **nsa_item,
                 "date": today_str,
                 "is_active_now": True,
                 "status_label": "Live Now (Lab Session in Progress)"
             }
-            break
-        elif (target_course_id and target_course_id.lower() == "nsa") or (not target_course_id and item["course_id"].lower() == "nsa"):
-            active_session = {
-                **item,
-                "date": today_str,
-                "is_active_now": True,
-                "status_label": "Live Now (Lab Session in Progress)"
-            }
-            break
 
     upcoming = []
     days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]

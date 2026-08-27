@@ -98,7 +98,7 @@ export default function Login() {
                   onClick={handleGoogleLogin}
                   disabled={isRedirecting}
                   aria-label="Sign in with Google"
-                  className="group mt-6 flex h-[48px] w-full items-center justify-between bg-white border border-slate-200 px-4 text-[13px] font-medium text-slate-700 transition hover:border-[#164a9c]/50 hover:bg-slate-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#164a9c] disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="group mt-6 flex h-[48px] w-full items-center justify-between bg-white border border-slate-200 px-4 text-[13px] font-medium text-slate-700 transition hover:border-[#164a9c]/50 hover:bg-slate-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#164a9c] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
                 >
                   {isRedirecting ? (
                     <div className="flex items-center gap-2 text-slate-500">
@@ -130,8 +130,28 @@ export default function Login() {
                   )}
                 </button>
 
-                <p className="mt-6 text-center text-[11px] text-slate-400">
-                  Use your institutional Google account to continue.
+                {/* Development Quick Login */}
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const { loginStudent } = await import("../../services/authService");
+                        const res = await loginStudent("student@fisat.ac.in", "student123");
+                        localStorage.setItem("labflow_token", res.access_token);
+                        window.location.href = "/student/dashboard";
+                      } catch (e) {
+                        console.error(e);
+                      }
+                    }}
+                    className="w-full py-2 bg-[#f0f4fa] hover:bg-[#e2ebf6] text-[#164a9c] text-[12px] font-semibold border border-[#164a9c]/20 transition cursor-pointer"
+                  >
+                    Quick Student Login (Allen John Joy)
+                  </button>
+                </div>
+
+                <p className="mt-4 text-center text-[11px] text-slate-400">
+                  Use your institutional account or development login to continue.
                 </p>
               </div>
             </section>

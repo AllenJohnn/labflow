@@ -118,44 +118,48 @@ export default function LaboratoryDetail() {
             </div>
           ) : (
             <div className="mt-4 divide-y divide-slate-100">
-              {exercises.map((ex) => (
-                <div
-                  key={ex.id}
-                  onClick={() => setSelectedExerciseForModal(ex)}
-                  className="group flex flex-wrap items-center justify-between gap-4 py-3.5 px-3 transition hover:bg-[#f0f4fa]/40 border-l-2 border-transparent hover:border-[#164a9c] cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-8 w-8 items-center justify-center bg-[#f0f4fa] border border-[#164a9c]/15 text-[12px] font-bold text-[#164a9c]">
-                      {ex.exerciseNumber || ex.exercise_number}
-                    </span>
-                    <div>
-                      <h4 className="text-[14px] font-semibold text-slate-800 group-hover:text-[#164a9c] transition-colors">
-                        {ex.title}
-                      </h4>
-                      <p className="text-[11px] text-slate-400">
-                        Assigned by {ex.faculty} {ex.dueDate ? `· Due: ${ex.dueDate}` : ""}
-                      </p>
+              {exercises.map((ex) => {
+                const exId = ex.id || ex.exercise_id;
+                const ideLink = `/student/laboratories/${(subjectId || ex.courseId || "nsa").toLowerCase()}/exercises/${exId}/ide`;
+                return (
+                  <Link
+                    key={ex.id || ex.exercise_id}
+                    to={ideLink}
+                    className="group flex flex-wrap items-center justify-between gap-4 py-3.5 px-3 transition hover:bg-[#f0f4fa]/40 border-l-2 border-transparent hover:border-[#164a9c] cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-8 w-8 items-center justify-center bg-[#f0f4fa] border border-[#164a9c]/15 text-[12px] font-bold text-[#164a9c]">
+                        {ex.exerciseNumber || ex.exercise_number}
+                      </span>
+                      <div>
+                        <h4 className="text-[14px] font-semibold text-slate-800 group-hover:text-[#164a9c] transition-colors">
+                          {ex.title}
+                        </h4>
+                        <p className="text-[11px] text-slate-400">
+                          Assigned by {ex.faculty} {ex.dueDate ? `· Due: ${ex.dueDate}` : ""}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
-                        ex.status === "Evaluated"
-                          ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
-                          : ex.status === "Reviewed"
-                          ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
-                          : ex.status === "Submitted"
-                          ? "bg-amber-50 text-amber-800 border-amber-200"
-                          : "bg-slate-100 text-slate-600 border-slate-200"
-                      }`}
-                    >
-                      {ex.status} {ex.marks ? `(${ex.marks})` : ""}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#164a9c] transition-colors" />
-                  </div>
-                </div>
-              ))}
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
+                          ex.status === "Evaluated"
+                            ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
+                            : ex.status === "Reviewed"
+                            ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
+                            : ex.status === "Submitted"
+                            ? "bg-amber-50 text-amber-800 border-amber-200"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}
+                      >
+                        {ex.status} {ex.marks ? `(${ex.marks})` : ""}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#164a9c] transition-colors" />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

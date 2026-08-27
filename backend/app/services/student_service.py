@@ -232,10 +232,21 @@ async def get_student_assigned_exercises(course_id: str | None = None, student_d
         except Exception:
             pass
 
+    from app.config.settings import settings
+
+    # Check if student qualifies for temporary IDE development access
+    stu_email = (student_doc.get("email") if student_doc else "").lower().strip()
+    is_dev_student = settings.IDE_DEMO_MODE and (stu_email == settings.DEMO_STUDENT_EMAIL.lower() or not stu_email)
+
     try:
-        query = {"is_assigned": True}
+        query_conditions = [{"is_assigned": True}]
+        if is_dev_student:
+            query_conditions.append({"exercise_id": {"$in": settings.DEMO_EXERCISE_IDS}})
+
+        query = {"$or": query_conditions}
         if cid:
-            query["course_id"] = cid
+            query = {"$and": [{"course_id": cid}, {"$or": query_conditions}]}
+
         cursor = db.exercises.find(query).sort("exercise_number", 1)
         db_exs = await cursor.to_list(length=100)
         if db_exs:
@@ -255,6 +266,7 @@ async def get_student_assigned_exercises(course_id: str | None = None, student_d
                     "title": ex.get("title"),
                     "description": ex.get("description", ""),
                     "language": ex_lang,
+                    "starter_code": ex.get("starter_code"),
                     "faculty": ex.get("faculty"),
                     "isAssigned": True,
                     "is_assigned": True,
@@ -273,8 +285,9 @@ async def get_student_assigned_exercises(course_id: str | None = None, student_d
 
     result = []
     for ex in IN_MEMORY_EXERCISES:
-        if ex.get("is_assigned") and (not cid or ex.get("course_id") == cid):
-            eid = ex.get("exercise_id", "ex-1")
+        eid = ex.get("exercise_id", "ex-1")
+        is_visible = ex.get("is_assigned") or (is_dev_student and eid in settings.DEMO_EXERCISE_IDS)
+        if is_visible and (not cid or ex.get("course_id") == cid):
             sub = stu_submissions_map.get(eid)
             sub_status = sub.get("status") if sub else "Not Submitted"
             ex_lang = ex.get("language") or ("c" if ex.get("course_id") == "nsa" else ("python" if ex.get("course_id") == "adbms" else "java"))
@@ -288,6 +301,7 @@ async def get_student_assigned_exercises(course_id: str | None = None, student_d
                 "title": ex.get("title"),
                 "description": ex.get("description", ""),
                 "language": ex_lang,
+                "starter_code": ex.get("starter_code"),
                 "faculty": ex.get("faculty"),
                 "isAssigned": True,
                 "is_assigned": True,
