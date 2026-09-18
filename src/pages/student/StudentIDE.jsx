@@ -60,6 +60,8 @@ export default function StudentIDE() {
   const [exercise, setExercise] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [code, setCode] = useState("");
+  const [stdin, setStdin] = useState("");
+  const [isStdinOpen, setIsStdinOpen] = useState(false);
   const [hasLocalDraft, setHasLocalDraft] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
@@ -192,6 +194,7 @@ export default function StudentIDE() {
       const result = await runCode({
         language: exercise?.language || "c",
         code,
+        stdin,
         exerciseId: exercise?.id || exercise?.exercise_id || exerciseId,
       });
       setOutputResult(result);
@@ -222,6 +225,7 @@ export default function StudentIDE() {
         code: code.trim(),
         language: (exercise?.language || "c").toLowerCase(),
         comments: `Submitted via LabFlow Monaco IDE`,
+        stdin,
       };
 
       const res = await submitExerciseWork(
@@ -392,15 +396,37 @@ export default function StudentIDE() {
 
           {/* Bottom Half / Console Output Panel (Desktop: 220px fixed / resizable) */}
           <div
-            className={`h-[220px] shrink-0 ${
-              mobileTab === "editor" ? "hidden lg:block" : "block h-full lg:h-[220px]"
+            className={`flex flex-col shrink-0 ${
+              mobileTab === "editor" ? "hidden lg:flex lg:h-[220px]" : "flex h-full lg:h-[220px]"
             }`}
           >
-            <OutputPanel
-              outputResult={outputResult}
-              isRunning={isRunning}
-              onClear={() => setOutputResult(null)}
-            />
+            {/* Stdin Panel */}
+            <div className="bg-[#1e1e1e] border-t border-[#333] px-4 py-1.5 flex flex-col">
+              <button
+                onClick={() => setIsStdinOpen(!isStdinOpen)}
+                className="text-[12px] text-slate-300 font-medium flex items-center justify-between w-full hover:text-white transition-colors"
+              >
+                <span>Standard Input (stdin)</span>
+                <span>{isStdinOpen ? "▼" : "▶"}</span>
+              </button>
+              {isStdinOpen && (
+                <textarea
+                  value={stdin}
+                  onChange={(e) => setStdin(e.target.value)}
+                  placeholder="Enter input for your program here..."
+                  className="w-full h-[60px] mt-2 bg-[#252526] text-slate-300 text-[13px] font-mono p-2 border border-[#444] rounded outline-none focus:border-[#164a9c] resize-y"
+                  spellCheck={false}
+                />
+              )}
+            </div>
+            
+            <div className="flex-1 overflow-hidden">
+              <OutputPanel
+                outputResult={outputResult}
+                isRunning={isRunning}
+                onClear={() => setOutputResult(null)}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -55,6 +55,7 @@ class StudentSubmissionCreateSchema(BaseModel):
     code: str = Field(..., min_length=1, description="Source code content for submission")
     language: str | None = Field(default=None, description="Programming language: c, java, or python")
     comments: str | None = Field(default="", description="Optional student comments")
+    stdin: str = Field(default="", description="Optional standard input")
 
     model_config = ConfigDict(extra="ignore")
 
@@ -139,20 +140,25 @@ async def run_exercise_code_route(
     payload: ExecutionRequestSchema,
     current_student: dict = Depends(get_current_student)
 ):
-    from app.services.judge0_service import execute_code
+    from app.services.judge0_service import execute_code as judge0_execute, is_judge0_configured
+    from app.services.execution_service import execute_code as local_execute
     
     student_id = str(current_student["_id"])
     
-    # We do NOT save executions to MongoDB. It is purely stateless.
-    result = await execute_code(
-        student_id=student_id,
-        language=payload.language,
-        code=payload.code,
-        stdin=payload.stdin
-    )
-    
-    # If Judge0/Execution service is not available, we return the graceful degradation object
-    # The frontend expects status = 'Service Unavailable' inside data.
+    if is_judge0_configured():
+        result = await judge0_execute(
+            student_id=student_id,
+            language=payload.language,
+            code=payload.code,
+            stdin=payload.stdin
+        )
+    else:
+        result = await local_execute(
+            student_id=student_id,
+            language=payload.language,
+            code=payload.code,
+            stdin=payload.stdin
+        )
     
     return {
         "status": "success",
@@ -166,6 +172,26 @@ async def submit_exercise_work_route(
     current_student: dict = Depends(get_current_student)
 ):
     from app.services.submission_service import create_or_update_submission
+    from app.services.judge0_service import is_judge0_configured, execute_code as judge0_execute
+    from app.services.execution_service import execute_code as local_execute
+
+    student_id = str(current_student["_id"])
+    
+    if is_judge0_configured():
+        exec_result = await judge0_execute(
+            student_id=student_id,
+            language=payload.language or "c",
+            code=payload.code,
+            stdin=payload.stdin
+        )
+    else:
+        exec_result = await local_execute(
+            student_id=student_id,
+            language=payload.language or "c",
+            code=payload.code,
+            stdin=payload.stdin
+        )
+
     result = await create_or_update_submission(current_student, exercise_id, payload.model_dump())
 
     if result["status"] == "not_found":
@@ -184,10 +210,13 @@ async def submit_exercise_work_route(
             detail=result["message"]
         )
 
+    data = result["data"]
+    data["execution_result"] = exec_result
+
     return {
         "status": "success",
         "message": result["message"],
-        "data": result["data"]
+        "data": data
     }
 
 class LabCheckInSchema(BaseModel):

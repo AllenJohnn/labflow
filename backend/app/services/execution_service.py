@@ -2,183 +2,197 @@ import os
 import shutil
 import tempfile
 import time
-import uuid
+import subprocess
+import sys
 import logging
-
-try:
-    import docker
-    from docker.errors import DockerException, ContainerError
-except ImportError:
-    docker = None
-    DockerException = Exception
-    ContainerError = Exception
+from typing import Dict, Any
 
 from app.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
-# Initialize Docker Client
-docker_client = None
-if settings.IDE_EXECUTION_ENABLED:
+_active_executions = set()
+
+def truncate_output(text: str, max_bytes: int) -> str:
+    if not text:
+        return ""
+    encoded = text.encode('utf-8', errors='replace')
+    if len(encoded) > max_bytes:
+        return encoded[:max_bytes].decode('utf-8', errors='replace') + "\n...[Output Truncated]"
+    return text
+
+def set_limits():
     try:
-        if docker is not None:
-            docker_client = docker.from_env()
-            docker_client.ping()
-            logger.info("Docker client initialized successfully.")
-        else:
-            logger.warning("Docker python package is not installed.")
-    except Exception as e:
-        logger.warning(f"Docker is unavailable: {e}. Code execution will be disabled.")
-        docker_client = None
+        import resource
+        memory_limit_bytes = settings.IDE_MEMORY_LIMIT_KB * 1024
+        resource.setrlimit(resource.RLIMIT_AS, (memory_limit_bytes, memory_limit_bytes))
+    except (ImportError, ValueError, OSError, AttributeError):
+        pass
 
-def is_execution_available() -> bool:
-    return docker_client is not None and settings.IDE_EXECUTION_ENABLED
-
-async def execute_code(language: str, code: str, stdin: str = "") -> dict:
-    if not is_execution_available():
+async def execute_code(student_id: str, language: str, code: str, stdin: str = "") -> Dict[str, Any]:
+    if student_id in _active_executions:
         return {
-            "status": "Service Unavailable",
+            "status": "Runtime Error",
+            "execution_status": "execution_error",
             "language": language,
             "stdout": "",
-            "stderr": "Code execution service is currently unavailable.",
-            "exit_code": -1,
+            "stderr": "An execution is already running for your session. Please wait.",
+            "compile_output": "",
+            "exit_code": 1,
             "execution_time_ms": 0,
+            "memory_kb": 0,
             "timed_out": False
         }
 
-    # Prepare sandbox directory
+    _active_executions.add(student_id)
+    
     sandbox_dir = tempfile.mkdtemp(prefix="labflow_sandbox_")
     
     try:
-        # File names and commands based on language
+        source_file = ""
+        run_cmd = []
+        compile_cmd = []
+        
         if language == "python":
             source_file = "main.py"
-            compile_cmd = None
-            run_cmd = "python3 main.py < input.txt"
+            run_cmd = [sys.executable, "main.py"]
         elif language == "c":
             source_file = "main.c"
-            compile_cmd = "gcc -O2 main.c -o main"
-            run_cmd = "./main < input.txt"
+            if sys.platform == "win32":
+                compile_cmd = ["gcc", "-O2", "main.c", "-o", "main.exe"]
+                run_cmd = ["main.exe"]
+            else:
+                compile_cmd = ["gcc", "-O2", "main.c", "-o", "main"]
+                run_cmd = ["./main"]
         elif language == "java":
             source_file = "Main.java"
-            compile_cmd = "javac Main.java"
-            run_cmd = "java Main < input.txt"
+            compile_cmd = ["javac", "Main.java"]
+            run_cmd = ["java", "Main"]
         else:
             return {
                 "status": "Runtime Error",
+                "execution_status": "execution_error",
                 "language": language,
                 "stdout": "",
                 "stderr": f"Unsupported language: {language}",
+                "compile_output": "",
                 "exit_code": 1,
                 "execution_time_ms": 0,
+                "memory_kb": 0,
                 "timed_out": False
             }
 
-        # Write code and input
         with open(os.path.join(sandbox_dir, source_file), "w", encoding="utf-8") as f:
             f.write(code)
             
-        with open(os.path.join(sandbox_dir, "input.txt"), "w", encoding="utf-8") as f:
-            f.write(stdin)
-            
-        # Create execution script
-        script_content = f"#!/bin/bash\n"
+        compile_output = ""
         if compile_cmd:
-            script_content += f"{compile_cmd} 2> compile_err.txt\n"
-            script_content += f"if [ $? -ne 0 ]; then\n"
-            script_content += f"  cat compile_err.txt >&2\n"
-            script_content += f"  exit 127\n"
-            script_content += f"fi\n"
-        
-        script_content += f"{run_cmd}\n"
-        
-        script_path = os.path.join(sandbox_dir, "run.sh")
-        with open(script_path, "w", encoding="utf-8") as f:
-            f.write(script_content)
-        
-        # We need to use Docker to run the script
-        start_time = time.time()
-        
-        try:
-            # Note: in a production environment, sandbox_dir must be accessible by docker daemon
-            # If Docker is running on Windows (Docker Desktop), temp paths usually map correctly.
-            # Using volumes with bind mount
-            container = docker_client.containers.run(
-                image="labflow-sandbox",
-                command=["/bin/bash", "/sandbox/run.sh"],
-                volumes={
-                    os.path.abspath(sandbox_dir): {
-                        "bind": "/sandbox",
-                        "mode": "rw"
-                    }
-                },
-                working_dir="/sandbox",
-                mem_limit=settings.IDE_MEMORY_LIMIT,
-                nano_cpus=settings.IDE_CPU_LIMIT,
-                network_mode="none",
-                read_only=True,
-                detach=True
-            )
-            
-            # Wait for execution with timeout
             try:
-                result = container.wait(timeout=settings.IDE_EXECUTION_TIMEOUT_SECONDS)
-                exit_code = result["StatusCode"]
-                timed_out = False
+                comp_res = subprocess.run(
+                    compile_cmd,
+                    cwd=sandbox_dir,
+                    capture_output=True,
+                    text=True,
+                    timeout=settings.IDE_EXECUTION_TIMEOUT_SECONDS
+                )
+                compile_output = truncate_output(comp_res.stderr or comp_res.stdout, settings.IDE_MAX_OUTPUT_BYTES)
+                if comp_res.returncode != 0:
+                    return {
+                        "status": "Compilation Error",
+                        "execution_status": "compilation_error",
+                        "language": language,
+                        "stdout": "",
+                        "stderr": compile_output,
+                        "compile_output": compile_output,
+                        "exit_code": comp_res.returncode,
+                        "execution_time_ms": 0,
+                        "memory_kb": 0,
+                        "timed_out": False
+                    }
+            except subprocess.TimeoutExpired:
+                return {
+                    "status": "Time Limit Exceeded",
+                    "execution_status": "timeout",
+                    "language": language,
+                    "stdout": "",
+                    "stderr": "Compilation timed out.",
+                    "compile_output": "Compilation timed out.",
+                    "exit_code": 1,
+                    "execution_time_ms": int(settings.IDE_EXECUTION_TIMEOUT_SECONDS * 1000),
+                    "memory_kb": 0,
+                    "timed_out": True
+                }
             except Exception as e:
-                # Assuming timeout exception from requests/urllib3 or docker wait
-                container.kill()
-                exit_code = 124 # Timeout exit code
-                timed_out = True
-            
-            logs = container.logs(stdout=True, stderr=True, demux=True)
-            stdout_bytes, stderr_bytes = logs[0], logs[1]
-            
-            stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
-            stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
-            
-            # Truncate output to IDE_MAX_OUTPUT_BYTES
-            if len(stdout) > settings.IDE_MAX_OUTPUT_BYTES:
-                stdout = stdout[:settings.IDE_MAX_OUTPUT_BYTES] + "\n...[Output Truncated]"
-            if len(stderr) > settings.IDE_MAX_OUTPUT_BYTES:
-                stderr = stderr[:settings.IDE_MAX_OUTPUT_BYTES] + "\n...[Error Truncated]"
-                
-            execution_time_ms = int((time.time() - start_time) * 1000)
-            
-            status = "Success"
-            if timed_out:
-                status = "Time Limit Exceeded"
-                stderr = "Execution timed out." + ("\n" + stderr if stderr else "")
-            elif exit_code == 127:
-                status = "Compilation Error"
-            elif exit_code != 0:
-                status = "Runtime Error"
-                
-            # Clean up container
-            container.remove(force=True)
-            
-            return {
-                "status": status,
-                "language": language,
-                "stdout": stdout,
-                "stderr": stderr,
-                "exit_code": exit_code,
-                "execution_time_ms": execution_time_ms,
-                "timed_out": timed_out
-            }
+                return {
+                    "status": "Compilation Error",
+                    "execution_status": "compilation_error",
+                    "language": language,
+                    "stdout": "",
+                    "stderr": f"Compilation failed: {e}",
+                    "compile_output": f"Compilation failed: {e}",
+                    "exit_code": 1,
+                    "execution_time_ms": 0,
+                    "memory_kb": 0,
+                    "timed_out": False
+                }
 
+        kwargs = {}
+        if sys.platform != "win32":
+            kwargs["preexec_fn"] = set_limits
+
+        start_time = time.time()
+        timed_out = False
+        try:
+            run_res = subprocess.run(
+                run_cmd,
+                cwd=sandbox_dir,
+                input=stdin,
+                capture_output=True,
+                text=True,
+                timeout=settings.IDE_EXECUTION_TIMEOUT_SECONDS,
+                **kwargs
+            )
+            stdout = run_res.stdout
+            stderr = run_res.stderr
+            exit_code = run_res.returncode
+        except subprocess.TimeoutExpired as e:
+            stdout = e.stdout.decode('utf-8', errors='replace') if isinstance(e.stdout, bytes) else (e.stdout or "")
+            stderr = e.stderr.decode('utf-8', errors='replace') if isinstance(e.stderr, bytes) else (e.stderr or "Execution timed out.")
+            exit_code = 124
+            timed_out = True
         except Exception as e:
-            execution_time_ms = int((time.time() - start_time) * 1000)
-            return {
-                "status": "Runtime Error",
-                "language": language,
-                "stdout": "",
-                "stderr": f"Docker container error: {str(e)}",
-                "exit_code": 1,
-                "execution_time_ms": execution_time_ms,
-                "timed_out": False
-            }
+            stdout = ""
+            stderr = f"Runtime failed: {e}"
+            exit_code = 1
+
+        execution_time_ms = int((time.time() - start_time) * 1000)
+        
+        stdout = truncate_output(stdout, settings.IDE_MAX_OUTPUT_BYTES)
+        stderr = truncate_output(stderr, settings.IDE_MAX_OUTPUT_BYTES)
+        
+        status = "Success"
+        execution_status = "completed"
+        
+        if timed_out:
+            status = "Time Limit Exceeded"
+            execution_status = "timeout"
+        elif exit_code != 0:
+            status = "Runtime Error"
+            execution_status = "runtime_error"
+
+        return {
+            "status": status,
+            "execution_status": execution_status,
+            "language": language,
+            "stdout": stdout,
+            "stderr": stderr,
+            "compile_output": compile_output,
+            "exit_code": exit_code,
+            "execution_time_ms": execution_time_ms,
+            "memory_kb": 0,
+            "timed_out": timed_out
+        }
 
     finally:
-        # Always clean up the temporary directory
+        _active_executions.remove(student_id)
         shutil.rmtree(sandbox_dir, ignore_errors=True)
