@@ -4,7 +4,8 @@ pydantic==2.13.4
 pydantic-settings==2.0.0
 pymongo==4.17.0
 motor==3.7.1
-PyJWT==2.13.0
+python-jose==3.3.0
+email-validator==2.2.0
 python-dotenv==1.0.1
 python-multipart==0.0.32
 Authlib==1.7.2

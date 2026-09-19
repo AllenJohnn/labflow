@@ -13,6 +13,16 @@ from app.services.faculty_service import init_default_faculty, init_default_lab_
 from app.services.student_service import init_default_student
 from app.routes import health, auth, student, faculty, admin
 
+import os
+import sys
+
+_debug_mode = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+_mongodb_uri = os.getenv("MONGODB_URI", "")
+
+if _debug_mode and not ("localhost" in _mongodb_uri or "127.0.0.1" in _mongodb_uri):
+    print("CRITICAL ERROR: Refusing to boot with DEBUG enabled against a non-local MONGODB_URI.", file=sys.stderr)
+    sys.exit(1)
+
 async def async_db_init():
     try:
         await check_database_connection()

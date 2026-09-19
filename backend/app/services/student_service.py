@@ -176,11 +176,12 @@ async def update_student_profile(student_id: str, profile_data: dict):
         return await get_student_by_id(student_id)
     except Exception as e:
         print(f"[Student] Error updating profile for student {student_id}: {e}")
-        # In-memory fallback
-        if str(DEFAULT_FALLBACK_STUDENT["_id"]) == student_id:
-            DEFAULT_FALLBACK_STUDENT.update(update_fields)
-            return DEFAULT_FALLBACK_STUDENT
-        return None
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database connection failed. Changes not saved, try again later."
+        )
+
 async def get_student_assigned_laboratories():
     from app.services.faculty_service import DEFAULT_LABS, IN_MEMORY_EXERCISES
 
