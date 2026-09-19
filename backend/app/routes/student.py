@@ -134,6 +134,36 @@ class ExecutionRequestSchema(BaseModel):
             raise ValueError(f"Unsupported language '{v}'. Allowed: {ALLOWED_LANGUAGES}")
         return clean
 
+@router.post("/sandbox/run")
+async def run_sandbox_code(
+    payload: ExecutionRequestSchema,
+    current_student: dict = Depends(get_current_student)
+):
+    from app.services.judge0_service import execute_code as judge0_execute, is_judge0_configured
+    from app.services.execution_service import execute_code as local_execute
+    
+    student_id = str(current_student["_id"])
+    
+    if is_judge0_configured():
+        result = await judge0_execute(
+            student_id=student_id,
+            language=payload.language,
+            code=payload.code,
+            stdin=payload.stdin
+        )
+    else:
+        result = await local_execute(
+            student_id=student_id,
+            language=payload.language,
+            code=payload.code,
+            stdin=payload.stdin
+        )
+    
+    return {
+        "status": "success",
+        "data": result
+    }
+
 @router.post("/exercises/{exercise_id}/run")
 async def run_exercise_code_route(
     exercise_id: str,

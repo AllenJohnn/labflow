@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,11 +9,15 @@ import {
   User,
   LogOut,
   X,
+  Terminal,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
   const { logout } = useAuth();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navItems = [
     {
@@ -29,6 +34,11 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
       name: "Exercises",
       path: "/student/exercises",
       icon: FileText,
+    },
+    {
+      name: "Code Sandbox",
+      path: "/student/ide",
+      icon: Terminal,
     },
     {
       name: "Submissions",
@@ -57,9 +67,11 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
         </div>
 
         <nav className="space-y-1">
-          <div className="px-3 pb-2.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-            Menu
-          </div>
+          {!isCollapsed && (
+            <div className="px-3 pb-2.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+              Menu
+            </div>
+          )}
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -76,7 +88,7 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
                 }
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span>{item.name}</span>
+                {!isCollapsed && <span>{item.name}</span>}
               </NavLink>
             );
           })}
@@ -84,9 +96,11 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
       </div>
 
       <div className="space-y-1 border-t border-slate-100 pt-5">
-        <div className="px-3 pb-2.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-          Account
-        </div>
+        {!isCollapsed && (
+          <div className="px-3 pb-2.5 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+            Account
+          </div>
+        )}
         <NavLink
           to="/student/profile"
           onClick={() => setMobileOpen(false)}
@@ -99,7 +113,7 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
           }
         >
           <User className="h-4 w-4 shrink-0" />
-          <span>Profile</span>
+          {!isCollapsed && <span>Profile</span>}
         </NavLink>
 
         <button
@@ -111,15 +125,21 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
           className="flex w-full items-center gap-3 px-3 py-2 text-[13px] font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-700"
         >
           <LogOut className="h-4 w-4 shrink-0 text-slate-400" />
-          <span>Sign Out</span>
+          {!isCollapsed && <span>Sign Out</span>}
         </button>
       </div>
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="hidden lg:flex items-center justify-center w-full mt-4 py-2 text-slate-400 hover:text-slate-600 border-t border-slate-100"
+      >
+        {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+      </button>
     </div>
   );
 
   return (
     <>
-      <aside className="hidden w-60 shrink-0 lg:block">
+      <aside className={`hidden shrink-0 lg:block transition-all duration-300 ${isCollapsed ? "w-[72px]" : "w-60"}`}>
         {sidebarContent}
       </aside>
 

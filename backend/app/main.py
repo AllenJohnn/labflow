@@ -16,10 +16,13 @@ from app.routes import health, auth, student, faculty, admin
 import os
 import sys
 
+from urllib.parse import urlparse
+
 _debug_mode = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 _mongodb_uri = os.getenv("MONGODB_URI", "")
+_host = urlparse(_mongodb_uri).hostname or ""
 
-if _debug_mode and not ("localhost" in _mongodb_uri or "127.0.0.1" in _mongodb_uri):
+if _debug_mode and _host not in ("localhost", "127.0.0.1"):
     print("CRITICAL ERROR: Refusing to boot with DEBUG enabled against a non-local MONGODB_URI.", file=sys.stderr)
     sys.exit(1)
 

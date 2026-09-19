@@ -1,4 +1,4 @@
-import { ArrowLeft, Play, Send, Clock, RotateCcw } from "lucide-react";
+import { ArrowLeft, ChevronRight, Play, Send, Clock, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function IDEHeader({
@@ -20,17 +20,24 @@ export default function IDEHeader({
 
   return (
     <header className="h-14 shrink-0 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 z-20">
-      {/* Left: Back Link & Exercise Title */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Left: Breadcrumbs & Exercise Title */}
+      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+        <Link
+          to="/student/dashboard"
+          className="hidden sm:inline-flex items-center text-[12.5px] font-medium text-slate-500 hover:text-[#164a9c] transition shrink-0"
+        >
+          Dashboard
+        </Link>
+        <ChevronRight className="hidden sm:block h-3.5 w-3.5 text-slate-300" />
+        
         <Link
           to={`/student/laboratory/${(courseId || exercise?.courseId || "").toLowerCase()}`}
           className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-slate-500 hover:text-[#164a9c] transition shrink-0"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Back to Laboratory</span>
+          <ArrowLeft className="h-4 w-4 sm:hidden" />
+          <span className="hidden sm:inline">Laboratories</span>
         </Link>
-
-        <div className="h-4 w-px bg-slate-200 shrink-0" />
+        <ChevronRight className="hidden sm:block h-3.5 w-3.5 text-slate-300" />
 
         <div className="flex items-center gap-2 min-w-0">
           <span className="inline-block bg-[#f0f4fa] px-2 py-0.5 text-[10.5px] font-bold text-[#164a9c] border border-[#164a9c]/15 uppercase shrink-0">
