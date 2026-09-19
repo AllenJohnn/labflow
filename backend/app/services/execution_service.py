@@ -46,9 +46,10 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
 
     _active_executions.add(student_id)
     
-    sandbox_dir = tempfile.mkdtemp(prefix="labflow_sandbox_")
-    
+    sandbox_dir = None
     try:
+        sandbox_dir = tempfile.mkdtemp(prefix="labflow_sandbox_")
+        
         source_file = ""
         run_cmd = []
         compile_cmd = []
@@ -85,6 +86,10 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
         with open(os.path.join(sandbox_dir, source_file), "w", encoding="utf-8") as f:
             f.write(code)
             
+        minimal_env = {"PATH": "/usr/bin:/bin"}
+        if sys.platform == "win32":
+            minimal_env = {"PATH": os.environ.get("PATH", "")}
+            
         compile_output = ""
         if compile_cmd:
             try:
@@ -93,7 +98,8 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
                     cwd=sandbox_dir,
                     capture_output=True,
                     text=True,
-                    timeout=settings.IDE_EXECUTION_TIMEOUT_SECONDS
+                    timeout=settings.IDE_EXECUTION_TIMEOUT_SECONDS,
+                    env=minimal_env
                 )
                 compile_output = truncate_output(comp_res.stderr or comp_res.stdout, settings.IDE_MAX_OUTPUT_BYTES)
                 if comp_res.returncode != 0:
@@ -123,13 +129,17 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
                     "timed_out": True
                 }
             except Exception as e:
+                if isinstance(e, FileNotFoundError) and language == "java":
+                    error_msg = "Java compiler unavailable — contact faculty"
+                else:
+                    error_msg = f"Compilation failed: {e}"
                 return {
                     "status": "Compilation Error",
                     "execution_status": "compilation_error",
                     "language": language,
                     "stdout": "",
-                    "stderr": f"Compilation failed: {e}",
-                    "compile_output": f"Compilation failed: {e}",
+                    "stderr": error_msg,
+                    "compile_output": error_msg,
                     "exit_code": 1,
                     "execution_time_ms": 0,
                     "memory_kb": 0,
@@ -139,6 +149,23 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
         kwargs = {}
         if sys.platform != "win32":
             kwargs["preexec_fn"] = set_limits
+            
+            bwrap_cmd = [
+                "bwrap",
+                "--ro-bind", "/usr", "/usr",
+                "--ro-bind", "/lib", "/lib",
+                "--ro-bind", "/lib64", "/lib64",
+                "--ro-bind", "/bin", "/bin",
+                "--ro-bind", "/etc/alternatives", "/etc/alternatives",
+                "--bind", sandbox_dir, sandbox_dir,
+                "--unshare-net",
+                "--unshare-pid",
+                "--die-with-parent",
+                "--clearenv",
+                "--setenv", "PATH", "/usr/bin:/bin",
+                "--chdir", sandbox_dir
+            ]
+            run_cmd = bwrap_cmd + run_cmd
 
         start_time = time.time()
         timed_out = False
@@ -150,6 +177,7 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
                 capture_output=True,
                 text=True,
                 timeout=settings.IDE_EXECUTION_TIMEOUT_SECONDS,
+                env=minimal_env,
                 **kwargs
             )
             stdout = run_res.stdout
@@ -194,5 +222,6 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
         }
 
     finally:
-        _active_executions.remove(student_id)
-        shutil.rmtree(sandbox_dir, ignore_errors=True)
+        _active_executions.discard(student_id)
+        if sandbox_dir and os.path.exists(sandbox_dir):
+            shutil.rmtree(sandbox_dir, ignore_errors=True)
