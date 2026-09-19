@@ -276,7 +276,8 @@ async def verify_admin_credentials(email: str, password: str):
         if admin.get("password_hash"):
             if verify_password(password, admin["password_hash"]):
                 return admin
-        elif password == DEFAULT_ADMIN_PASS:
+        import os
+        if os.getenv("DEBUG", "False").lower() == "true" and password == DEFAULT_ADMIN_PASS:
             return admin
     return None
 
@@ -1120,6 +1121,8 @@ async def create_admin_announcement(data: dict, admin_name: str = "System Admini
     except Exception as e:
         print(f"[Admin] Create announcement DB notice: {e}")
         ann_doc["id"] = f"ann-{datetime.now().timestamp()}"
+        if "_id" in ann_doc:
+            ann_doc["_id"] = str(ann_doc["_id"])
 
     await log_audit_action("CREATE_ANNOUNCEMENT", f"Audience: {ann_doc['audience']}", f"Published notice: '{ann_doc['title']}'", admin_name)
     return ann_doc

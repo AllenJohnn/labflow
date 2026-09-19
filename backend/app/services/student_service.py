@@ -142,8 +142,10 @@ async def verify_student_credentials(email: str, password: str):
     if student:
         if student.get("password_hash") and verify_password(password, student["password_hash"]):
             return student
-        if clean_email == DEFAULT_STUDENT_EMAIL.lower() and password == DEFAULT_STUDENT_PASS:
-            return DEFAULT_FALLBACK_STUDENT
+        import os
+        if os.getenv("DEBUG", "False").lower() == "true":
+            if clean_email == DEFAULT_STUDENT_EMAIL.lower() and password == DEFAULT_STUDENT_PASS:
+                return DEFAULT_FALLBACK_STUDENT
 
     return None
 
@@ -174,8 +176,11 @@ async def update_student_profile(student_id: str, profile_data: dict):
         return await get_student_by_id(student_id)
     except Exception as e:
         print(f"[Student] Error updating profile for student {student_id}: {e}")
-        raise
-
+        # In-memory fallback
+        if str(DEFAULT_FALLBACK_STUDENT["_id"]) == student_id:
+            DEFAULT_FALLBACK_STUDENT.update(update_fields)
+            return DEFAULT_FALLBACK_STUDENT
+        return None
 async def get_student_assigned_laboratories():
     from app.services.faculty_service import DEFAULT_LABS, IN_MEMORY_EXERCISES
 
