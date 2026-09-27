@@ -177,6 +177,37 @@ async def run_exercise_code_route(
         "data": result
     }
 
+@router.post("/exercises/{exercise_id}/run-tests")
+async def run_exercise_tests_route(
+    exercise_id: str,
+    payload: ExecutionRequestSchema,
+    current_student: dict = Depends(get_current_student)
+):
+    from app.services.submission_service import run_exercise_tests
+
+    result = await run_exercise_tests(
+        student_doc=current_student,
+        exercise_id=exercise_id,
+        language=payload.language,
+        code=payload.code
+    )
+
+    if result["status"] == "not_found":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=result["message"]
+        )
+    elif result["status"] == "not_assigned":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=result["message"]
+        )
+        
+    return {
+        "status": "success",
+        "data": result["data"]
+    }
+
 @router.post("/exercises/{exercise_id}/submit")
 async def submit_exercise_work_route(
     exercise_id: str,

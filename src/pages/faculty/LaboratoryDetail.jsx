@@ -13,10 +13,12 @@ import {
   Search,
   Upload,
   X,
+  ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
 import FacultyLayout from "../../components/layout/FacultyLayout";
 import FacultyEvaluationModal from "../../components/faculty/FacultyEvaluationModal";
+import TestCasesDialog from "../../components/faculty/TestCasesDialog";
 import {
   getFacultyProfile,
   getFacultyLaboratoryDetail,
@@ -60,6 +62,9 @@ export default function FacultyLaboratoryDetail() {
   const [annTitle, setAnnTitle] = useState("");
   const [annContent, setAnnContent] = useState("");
   const [postingAnn, setPostingAnn] = useState(false);
+
+  const [isTestCasesModalOpen, setIsTestCasesModalOpen] = useState(false);
+  const [selectedExForTests, setSelectedExForTests] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -504,9 +509,22 @@ export default function FacultyLaboratoryDetail() {
 
                     <div className="flex items-center gap-3">
                       {isAssigned ? (
-                        <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#159447]">
-                          <CheckCircle2 className="h-4 w-4" />
-                          <span>Visible to Students</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedExForTests(ex);
+                              setIsTestCasesModalOpen(true);
+                            }}
+                            className="flex items-center gap-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 text-[12px] font-semibold transition cursor-pointer"
+                          >
+                            <ListChecks className="h-3.5 w-3.5" />
+                            <span>Test Cases {ex.test_cases ? `(\${ex.test_cases.length})` : ""}</span>
+                          </button>
+                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#159447] ml-2">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Visible to Students</span>
+                          </div>
                         </div>
                       ) : (
                         <button
@@ -1125,6 +1143,28 @@ export default function FacultyLaboratoryDetail() {
               getFacultyLaboratoryDetail(normalizedId, true).then((ld) => {
                 if (ld) setLab(ld);
               });
+            }}
+          />
+        )}
+        
+        {/* Test Cases Modal */}
+        {selectedExForTests && (
+          <TestCasesDialog
+            open={isTestCasesModalOpen}
+            onOpenChange={setIsTestCasesModalOpen}
+            exerciseId={selectedExForTests.exercise_id || selectedExForTests.id}
+            initialTestCases={selectedExForTests.test_cases || []}
+            onSaved={(updatedTestCases) => {
+              setExercises((prev) =>
+                prev.map((ex) => {
+                  const eId = ex.exercise_id || ex.id;
+                  const sId = selectedExForTests.exercise_id || selectedExForTests.id;
+                  if (eId === sId) {
+                    return { ...ex, test_cases: updatedTestCases };
+                  }
+                  return ex;
+                })
+              );
             }}
           />
         )}

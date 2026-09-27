@@ -17,8 +17,8 @@ LANGUAGE_MAPPING = {
 }
 
 # In-memory lock for concurrent execution prevention by student ID
-# Using a set to track currently executing student IDs
-_active_executions = set()
+# Using a dict to track currently executing student IDs and their counts
+_active_executions = {}
 
 def is_judge0_configured() -> bool:
     return bool(settings.IDE_EXECUTION_ENABLED and settings.JUDGE0_API_URL)
@@ -117,13 +117,14 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
             "timed_out": False
         }
         
-    if student_id in _active_executions:
+    current_executions = _active_executions.get(student_id, 0)
+    if current_executions >= 3:
         return {
             "status": "Runtime Error",
             "execution_status": "execution_error",
             "language": language,
             "stdout": "",
-            "stderr": "An execution is already running for your session. Please wait.",
+            "stderr": "Maximum concurrent executions reached for your session. Please wait.",
             "compile_output": "",
             "exit_code": 1,
             "execution_time_ms": 0,
@@ -131,7 +132,7 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
             "timed_out": False
         }
 
-    _active_executions.add(student_id)
+    _active_executions[student_id] = current_executions + 1
     
     try:
         api_url = settings.JUDGE0_API_URL.rstrip("/")
@@ -229,4 +230,7 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
                     "timed_out": False
                 }
     finally:
-        _active_executions.remove(student_id)
+        if student_id in _active_executions:
+            _active_executions[student_id] -= 1
+            if _active_executions[student_id] <= 0:
+                del _active_executions[student_id]

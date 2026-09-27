@@ -213,7 +213,117 @@ async def get_student_exercise_submission(student_doc: dict, exercise_id: str):
 
     return None
 
+import asyncio
+from typing import Dict, Any
+
+async def run_exercise_tests(student_doc: dict, exercise_id: str, language: str, code: str) -> Dict[str, Any]:
+    eid = exercise_id.strip()
+    
+    # 1. Fetch exercise
+    exercise = None
+    try:
+        exercise = await db.exercises.find_one({"exercise_id": eid})
+    except Exception:
+        pass
+    if not exercise:
+        exercise = _find_exercise_meta("", eid)
+        
+    if not exercise:
+        return {"status": "not_found", "message": f"Exercise '{eid}' was not found."}
+
+    # 2. Check access
+    from app.config.settings import settings
+    stu_email = (student_doc.get("email") or "").lower().strip()
+    is_dev_student = settings.IDE_DEMO_MODE and (stu_email == settings.DEMO_STUDENT_EMAIL.lower() or not stu_email)
+    is_accessible = exercise.get("is_assigned") or (is_dev_student and eid in settings.DEMO_EXERCISE_IDS)
+
+    if not is_accessible:
+        return {"status": "not_assigned", "message": f"Exercise '{exercise.get('title', eid)}' has not been assigned."}
+
+    test_cases = exercise.get("test_cases", [])
+    if not test_cases:
+        return {
+            "status": "success",
+            "data": {
+                "exercise_id": eid,
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "status": "passed",
+                "results": []
+            }
+        }
+
+    from app.services.judge0_service import execute_code as judge0_execute
+    
+    stu_id = student_doc.get("student_id", "FIT25MCA-2008")
+    sem = asyncio.Semaphore(3) # Concurrency limit of 3
+    
+    async def run_single_test(tc: dict, index: int):
+        async with sem:
+            result = await judge0_execute(
+                student_id=stu_id,
+                language=language,
+                code=code,
+                stdin=tc.get("input", "")
+            )
+            
+            tc_status = "error"
+            actual_out = result.get("stdout", "") or ""
+            expected_out = tc.get("expected_output", "") or ""
+            
+            if result.get("execution_status") == "completed":
+                if actual_out.strip() == expected_out.strip():
+                    tc_status = "pass"
+                else:
+                    tc_status = "fail"
+            
+            # Format the output based on visibility
+            res_obj = {
+                "test_case_id": tc.get("id"),
+                "test_number": index + 1,
+                "status": tc_status
+            }
+            
+            if tc_status == "error":
+                res_obj["error_type"] = result.get("execution_status", "execution_error")
+                
+            if not tc.get("is_hidden", False):
+                res_obj["actual_output"] = actual_out
+                res_obj["expected_output"] = expected_out
+                
+            return res_obj
+            
+    tasks = [run_single_test(tc, i) for i, tc in enumerate(test_cases)]
+    results = await asyncio.gather(*tasks)
+    
+    passed = sum(1 for r in results if r["status"] == "pass")
+    failed = sum(1 for r in results if r["status"] == "fail")
+    errors = sum(1 for r in results if r["status"] == "error")
+    total = len(test_cases)
+    
+    overall_status = "failed"
+    if passed == total:
+        overall_status = "passed"
+    elif passed > 0:
+        overall_status = "partial"
+    if errors > 0 and passed == 0:
+        overall_status = "error"
+        
+    return {
+        "status": "success",
+        "data": {
+            "exercise_id": eid,
+            "total_tests": total,
+            "passed_tests": passed,
+            "failed_tests": failed,
+            "status": overall_status,
+            "results": results
+        }
+    }
+
 async def create_or_update_submission(student_doc: dict, exercise_id: str, payload: dict):
+
     """Create or update a student's submission for an assigned exercise."""
     eid = exercise_id.strip()
 

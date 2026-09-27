@@ -1,4 +1,7 @@
-import { AlertCircle, CheckCircle2, Clock, Info, Terminal, XCircle } from "lucide-react";
+﻿import os
+import sys
+
+output_panel = """import { AlertCircle, CheckCircle2, Clock, Info, Terminal, XCircle } from "lucide-react";
 import * as React from "react";
 
 export default function OutputPanel({ 
@@ -36,11 +39,7 @@ export default function OutputPanel({
           <button
             type="button"
             onClick={() => setActiveTab("output")}
-            className={`px-3 py-1.5 text-[11.5px] font-sans font-medium transition cursor-pointer flex items-center gap-1.5 ${
-              activeTab === "output"
-                ? "bg-[#1e1e1e] text-white border-t-2 border-blue-500"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+            className={px-3 py-1.5 text-[11.5px] font-sans font-medium transition cursor-pointer flex items-center gap-1.5 }
           >
             <Terminal className="h-3.5 w-3.5" />
             <span>Output</span>
@@ -49,13 +48,9 @@ export default function OutputPanel({
           <button
             type="button"
             onClick={() => setActiveTab("errors")}
-            className={`px-3 py-1.5 text-[11.5px] font-sans font-medium transition cursor-pointer flex items-center gap-1.5 ${
-              activeTab === "errors"
-                ? "bg-[#1e1e1e] text-white border-t-2 border-red-500"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+            className={px-3 py-1.5 text-[11.5px] font-sans font-medium transition cursor-pointer flex items-center gap-1.5 }
           >
-            <AlertCircle className={`h-3.5 w-3.5 ${hasErrors ? "text-red-400" : ""}`} />
+            <AlertCircle className={h-3.5 w-3.5 } />
             <span>Errors</span>
             {hasErrors && (
               <span className="h-1.5 w-1.5 rounded-full bg-red-500 ml-0.5" />
@@ -66,11 +61,7 @@ export default function OutputPanel({
             <button
               type="button"
               onClick={() => setActiveTab("tests")}
-              className={`px-3 py-1.5 text-[11.5px] font-sans font-medium transition cursor-pointer flex items-center gap-1.5 ${
-                activeTab === "tests"
-                  ? "bg-[#1e1e1e] text-white border-t-2 border-[#159447]"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
+              className={px-3 py-1.5 text-[11.5px] font-sans font-medium transition cursor-pointer flex items-center gap-1.5 }
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
               <span>Test Results</span>
@@ -94,24 +85,14 @@ export default function OutputPanel({
             <>
               {status !== "Idle" && activeTab !== "tests" && (
                 <span
-                  className={`px-1.5 py-0.5 text-[10.5px] font-semibold uppercase rounded-sm ${
-                    status === "Success" || status === "Accepted"
-                      ? "bg-emerald-950 text-emerald-300 border border-emerald-800"
-                      : status === "Compilation Error" || status === "Runtime Error" || status === "Execution Error"
-                      ? "bg-red-950 text-red-300 border border-red-800"
-                      : "bg-slate-800 text-slate-300 border border-slate-700"
-                  }`}
+                  className={px-1.5 py-0.5 text-[10.5px] font-semibold uppercase rounded-sm }
                 >
                   {status}
                 </span>
               )}
               {testsRunStatus !== "Idle" && activeTab === "tests" && (
                 <span
-                  className={`px-1.5 py-0.5 text-[10.5px] font-semibold uppercase rounded-sm ${
-                    testsRunStatus === "Passed"
-                      ? "bg-emerald-950 text-emerald-300 border border-emerald-800"
-                      : "bg-red-950 text-red-300 border border-red-800"
-                  }`}
+                  className={px-1.5 py-0.5 text-[10.5px] font-semibold uppercase rounded-sm }
                 >
                   {testsRunStatus}
                 </span>
@@ -195,11 +176,7 @@ export default function OutputPanel({
                     {results.map((test, i) => (
                       <div
                         key={i}
-                        className={`p-2.5 border rounded-sm flex flex-col gap-1.5 ${
-                          test.status === "Passed"
-                            ? "bg-emerald-950/30 border-emerald-800/60 text-emerald-200"
-                            : "bg-red-950/30 border-red-800/60 text-red-200"
-                        }`}
+                        className={p-2.5 border rounded-sm flex flex-col gap-1.5 }
                       >
                         <div className="flex items-center gap-2 font-semibold text-[13px]">
                           {test.status === "Passed" ? (
@@ -243,3 +220,155 @@ export default function OutputPanel({
     </div>
   );
 }
+"""
+
+test_cases = """import { useState, useEffect } from "react";
+import { Plus, Trash2, Eye, EyeOff, Save, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { toast } from "sonner";
+import api from "../../services/api";
+
+export default function TestCasesDialog({ open, onOpenChange, exerciseId, initialTestCases = [], onSaved }) {
+  const [testCases, setTestCases] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setTestCases(initialTestCases.length > 0 ? JSON.parse(JSON.stringify(initialTestCases)) : []);
+    }
+  }, [open, initialTestCases]);
+
+  const generateId = () => 	c-;
+
+  const addTestCase = () => {
+    setTestCases([...testCases, { id: generateId(), input: "", expected_output: "", is_hidden: false }]);
+  };
+
+  const removeTestCase = (id) => {
+    setTestCases(testCases.filter(tc => tc.id !== id));
+  };
+
+  const updateTestCase = (id, field, value) => {
+    setTestCases(testCases.map(tc => tc.id === id ? { ...tc, [field]: value } : tc));
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await api.put(/faculty/exercises//test-cases, testCases);
+      toast.success("Test cases saved successfully");
+      if (onSaved) onSaved(res.data.data.test_cases || testCases);
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Failed to save test cases", err);
+      toast.error(err.response?.data?.detail || "Failed to save test cases");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="px-6 py-4 border-b border-border bg-muted/20">
+          <DialogTitle className="text-xl font-bold flex items-center justify-between">
+            <span>Automated Test Cases</span>
+            <span className="text-sm font-medium text-muted-foreground bg-muted px-2.5 py-0.5 rounded-full">
+              {testCases.length} configured
+            </span>
+          </DialogTitle>
+          <DialogDescription>
+            Configure input and expected output for automated Judge0 execution. Leave blank if not applicable.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-muted/10">
+          {testCases.length === 0 ? (
+            <div className="text-center py-10 px-4 border-2 border-dashed border-border rounded-lg bg-background">
+              <h3 className="text-sm font-semibold text-foreground">No test cases configured</h3>
+              <p className="mt-1 text-sm text-muted-foreground max-w-sm mx-auto">
+                Students can still Run and Submit normally. Without test cases, the "Run Tests" button will be hidden.
+              </p>
+              <Button onClick={addTestCase} variant="outline" className="mt-4">
+                <Plus className="mr-2 h-4 w-4" /> Add First Test Case
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {testCases.map((tc, index) => (
+                <div key={tc.id} className="border border-border rounded-lg bg-card shadow-sm overflow-hidden flex flex-col">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/40">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold font-mono text-muted-foreground">#{index + 1}</span>
+                      <button
+                        onClick={() => updateTestCase(tc.id, "is_hidden", !tc.is_hidden)}
+                        className={lex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold transition-colors }
+                      >
+                        {tc.is_hidden ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        {tc.is_hidden ? "Hidden" : "Public"}
+                      </button>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => removeTestCase(tc.id)}
+                      className="h-7 w-7 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  {/* Body */}
+                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground">Standard Input</label>
+                      <Textarea 
+                        value={tc.input} 
+                        onChange={(e) => updateTestCase(tc.id, "input", e.target.value)}
+                        placeholder="e.g. 5 10" 
+                        className="font-mono text-xs min-h-[80px]"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-foreground">Expected Output</label>
+                      <Textarea 
+                        value={tc.expected_output} 
+                        onChange={(e) => updateTestCase(tc.id, "expected_output", e.target.value)}
+                        placeholder="e.g. 15" 
+                        className="font-mono text-xs min-h-[80px]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <Button onClick={addTestCase} variant="outline" className="w-full border-dashed border-2 py-6 text-muted-foreground hover:text-foreground">
+                <Plus className="mr-2 h-4 w-4" /> Add Test Case
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="px-6 py-4 border-t border-border bg-background">
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : <><Save className="mr-2 h-4 w-4" /> Save Test Cases</>}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+"""
+
+with open("src/components/ide/OutputPanel.jsx", "w", encoding="utf-8") as f:
+    f.write(output_panel)
+
+with open("src/components/faculty/TestCasesDialog.jsx", "w", encoding="utf-8") as f:
+    f.write(test_cases)

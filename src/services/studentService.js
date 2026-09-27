@@ -454,3 +454,14 @@ export const checkInStudentAttendance = async (courseId = null) => {
   }
 };
 
+export const runExerciseTests = async (exerciseId, payload) => {
+  try {
+    const res = await api.post(`/student/exercises/${exerciseId}/run-tests`, payload);
+    return res.data;
+  } catch (err) {
+    console.error(`Error running tests for exercise ${exerciseId}:`, err);
+    throw err;
+  }
+};
+
+

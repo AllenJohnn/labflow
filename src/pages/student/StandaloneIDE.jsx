@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
@@ -11,25 +11,20 @@ export default function StandaloneIDE() {
   const { user } = useAuth();
   
   // State
-  const [code, setCode] = useState("");
+  const draftKey = `ls_scratch_${user?.id || 'guest'}`;
+
+  // State
+  const [code, setCode] = useState(() => {
+    const saved = localStorage.getItem(draftKey);
+    return saved || "# Welcome to the LabFlow Sandbox Playground!\n# Write your code below and hit Run.\n\nprint('Hello Sandbox!')";
+  });
   const [language, setLanguage] = useState("python");
   const [stdin, setStdin] = useState("");
   const [isStdinOpen, setIsStdinOpen] = useState(false);
   const [outputResult, setOutputResult] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [mobileTab, setMobileTab] = useState("editor");
-
-  const draftKey = `ls_scratch_${user?.id || 'guest'}`;
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(draftKey);
-    if (saved) {
-      setCode(saved);
-    } else {
-      setCode("# Welcome to the LabFlow Sandbox Playground!\n# Write your code below and hit Run.\n\nprint('Hello Sandbox!')");
-    }
-  }, [draftKey]);
+  const [activeOutputTab, setActiveOutputTab] = useState("output");
 
   // Save to localStorage on change
   const handleCodeChange = useCallback((newCode) => {
@@ -187,7 +182,14 @@ export default function StandaloneIDE() {
 
         {/* Output Panel */}
         <div className={`w-full lg:w-[450px] shrink-0 h-full border-l border-slate-200 bg-white ${mobileTab === "output" ? "block" : "hidden lg:block"}`}>
-          <OutputPanel outputResult={outputResult} isRunning={isRunning} isStandalone={true} />
+          <OutputPanel 
+            outputResult={outputResult} 
+            isRunning={isRunning} 
+            isStandalone={true}
+            activeTab={activeOutputTab}
+            setActiveTab={setActiveOutputTab}
+            onClear={() => setOutputResult(null)}
+          />
         </div>
       </div>
     </div>

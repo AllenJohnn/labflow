@@ -1,4 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+﻿import os
+
+# Update StudentIDE.jsx
+ide_content = r"""import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
@@ -14,20 +17,20 @@ import IDEHeader from "../../components/ide/IDEHeader";
 import ExercisePanel from "../../components/ide/ExercisePanel";
 import CodeEditor from "../../components/ide/CodeEditor";
 import OutputPanel from "../../components/ide/OutputPanel";
-import { Panel, Group, Separator } from "react-resizable-panels";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Loader2 } from "lucide-react";
 
 const DEFAULT_STARTER_CODE = {
-  c: `#include <stdio.h>\n\nint main() {\n    // Write your C program here\n    printf("LabFlow C Program\\n");\n    return 0;\n}\n`,
-  java: `public class Main {\n    public static void main(String[] args) {\n        // Write your Java program here\n        System.out.println("LabFlow Java Program");\n    }\n}\n`,
-  python: `def main():\n    # Write your Python program here\n    print("LabFlow Python Program")\n\nif __name__ == "__main__":\n    main()\n`,
+  c: #include <stdio.h>\n\nint main() {\n    // Write your C program here\n    printf("LabFlow C Program\\n");\n    return 0;\n}\n,
+  java: public class Main {\n    public static void main(String[] args) {\n        // Write your Java program here\n        System.out.println("LabFlow Java Program");\n    }\n}\n,
+  python: def main():\n    # Write your Python program here\n    print("LabFlow Python Program")\n\nif __name__ == "__main__":\n    main()\n,
 };
 
 function getDraftStorageKey(studentId, courseId, exerciseId) {
   const sId = (studentId || "default").toLowerCase();
   const cId = (courseId || "default").toLowerCase();
   const eId = (exerciseId || "default").toLowerCase();
-  return `labflow:ide:${sId}:${cId}:${eId}`;
+  return labflow:ide:::;
 }
 
 export default function StudentIDE() {
@@ -66,7 +69,7 @@ export default function StudentIDE() {
 
         const enrolledLab = labs?.find((l) => (l.id || l.course_id || "").toLowerCase() === normCourseId);
         if (!enrolledLab && labs && labs.length > 0) {
-          toast.error(`You are not enrolled in laboratory '${courseId?.toUpperCase()}'.`);
+          toast.error(You are not enrolled in laboratory ''.);
           navigate("/student/laboratories");
           return;
         }
@@ -79,7 +82,7 @@ export default function StudentIDE() {
 
         if (!currentEx) {
           toast.error("The requested exercise is not available or has not been assigned.");
-          navigate(`/student/laboratory/${normCourseId}`);
+          navigate(/student/laboratory/);
           return;
         }
 
@@ -192,7 +195,7 @@ export default function StudentIDE() {
       const payload = {
         code: code.trim(),
         language: (exercise?.language || "c").toLowerCase(),
-        comments: `Submitted via LabFlow Monaco IDE`,
+        comments: Submitted via LabFlow Monaco IDE,
         stdin,
       };
       const res = await submitExerciseWork(exercise?.id || exercise?.exercise_id || exerciseId, payload);
@@ -253,7 +256,7 @@ export default function StudentIDE() {
       />
 
       <div className="flex-1 overflow-hidden">
-        <Group direction="horizontal" className="h-full">
+        <PanelGroup direction="horizontal" className="h-full">
           <Panel 
             defaultSize={25} 
             minSize={15} 
@@ -264,13 +267,13 @@ export default function StudentIDE() {
           >
             <ExercisePanel exercise={exercise} submission={submission} courseId={courseId} />
           </Panel>
-          <Separator className="w-1 bg-border hover:bg-primary/50 transition-colors cursor-col-resize flex flex-col justify-center items-center"><div className="h-6 w-0.5 bg-muted-foreground/30 rounded-full" /></Separator>
+          <PanelResizeHandle className="w-1 bg-border hover:bg-primary/50 transition-colors cursor-col-resize flex flex-col justify-center items-center"><div className="h-6 w-0.5 bg-muted-foreground/30 rounded-full" /></PanelResizeHandle>
           <Panel defaultSize={75} className="flex flex-col bg-[#1e1e1e]">
-            <Group direction="vertical">
+            <PanelGroup direction="vertical">
               <Panel defaultSize={70} minSize={30}>
                 <CodeEditor code={code} language={exLanguage} onChange={handleCodeChange} />
               </Panel>
-              <Separator className="h-1 bg-border hover:bg-primary/50 transition-colors cursor-row-resize z-10 flex flex-row justify-center items-center"><div className="w-6 h-0.5 bg-muted-foreground/30 rounded-full" /></Separator>
+              <PanelResizeHandle className="h-1 bg-border hover:bg-primary/50 transition-colors cursor-row-resize z-10 flex flex-row justify-center items-center"><div className="w-6 h-0.5 bg-muted-foreground/30 rounded-full" /></PanelResizeHandle>
               <Panel defaultSize={30} minSize={10} className="bg-background flex flex-col border-t">
                 <OutputPanel 
                   outputResult={outputResult} 
@@ -285,10 +288,16 @@ export default function StudentIDE() {
                   hasTests={hasTests}
                 />
               </Panel>
-            </Group>
+            </PanelGroup>
           </Panel>
-        </Group>
+        </PanelGroup>
       </div>
     </div>
   );
 }
+"""
+
+with open("src/pages/student/StudentIDE.jsx", "w", encoding="utf-8") as f:
+    f.write(ide_content)
+
+print("Updated StudentIDE.jsx correctly")

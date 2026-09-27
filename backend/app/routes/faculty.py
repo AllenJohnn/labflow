@@ -139,6 +139,69 @@ async def assign_lab_exercise_nested(
         "data": updated
     }
 
+class TestCaseSchema(BaseModel):
+    id: str = Field(..., description="Unique test case ID")
+    input: str = Field(default="", description="Test case standard input")
+    expected_output: str = Field(default="", description="Expected standard output")
+    is_hidden: bool = Field(default=False, description="Whether this test case is hidden from students")
+
+class UpdateTestCasesSchema(BaseModel):
+    test_cases: list[TestCaseSchema] = Field(..., description="List of test cases")
+
+@router.put("/exercises/{exercise_id}/test-cases")
+async def update_exercise_test_cases(
+    exercise_id: str,
+    payload: UpdateTestCasesSchema,
+    current_faculty: dict = Depends(get_current_faculty)
+):
+    from app.services.faculty_service import is_faculty_authorized_for_course, IN_MEMORY_EXERCISES
+    from app.database.mongodb import db
+
+    if len(payload.test_cases) > 20:
+        raise HTTPException(status_code=400, detail="Maximum 20 test cases allowed per exercise")
+
+    test_case_ids = [tc.id for tc in payload.test_cases]
+    if len(test_case_ids) != len(set(test_case_ids)):
+        raise HTTPException(status_code=400, detail="Duplicate test case IDs are not allowed")
+
+    target_ex = None
+    try:
+        target_ex = await db.exercises.find_one({"exercise_id": exercise_id})
+    except Exception:
+        pass
+
+    if not target_ex:
+        target_ex = next((e for e in IN_MEMORY_EXERCISES if e.get("exercise_id") == exercise_id), None)
+
+    if not target_ex:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+
+    course_id = target_ex.get("course_id")
+    if not await is_faculty_authorized_for_course(current_faculty, course_id):
+        raise HTTPException(status_code=403, detail="Not authorized to modify test cases for this exercise")
+
+    test_cases_dump = [tc.model_dump() for tc in payload.test_cases]
+
+    try:
+        await db.exercises.update_one(
+            {"exercise_id": exercise_id},
+            {"$set": {"test_cases": test_cases_dump}},
+            upsert=True
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    mem_ex = next((e for e in IN_MEMORY_EXERCISES if e.get("exercise_id") == exercise_id), None)
+    if mem_ex:
+        mem_ex["test_cases"] = test_cases_dump
+
+    return {
+        "status": "success",
+        "message": "Test cases updated successfully",
+        "data": test_cases_dump
+    }
+
+
 class SubmissionEvaluationSchema(BaseModel):
     status: str = Field(default="Evaluated", description="Status (Evaluated, Reviewed, Submitted)")
     marks: str | None = Field(default=None, description="Marks / Score awarded (e.g. 18/20)")
