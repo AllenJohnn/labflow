@@ -115,7 +115,6 @@ export default function StandaloneIDE() {
           >
             <option value="python">Python 3</option>
             <option value="c">C (GCC)</option>
-            <option value="cpp">C++ (GCC)</option>
             <option value="java">Java</option>
           </select>
           <button

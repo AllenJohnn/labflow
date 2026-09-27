@@ -5,7 +5,7 @@ from app.main import app
 from app.services.jwt_service import create_access_token
 from app.services.submission_service import seed_demo_submissions
 
-async def run_submission_workflow_tests():
+async def test_submission_flow():
     print("================================================================================")
     print("           LABFLOW SUBMISSION WORKFLOW & EVALUATION TEST SUITE                 ")
     print("================================================================================")
@@ -278,4 +278,4 @@ async def run_submission_workflow_tests():
     print("================================================================================")
 
 if __name__ == "__main__":
-    asyncio.run(run_submission_workflow_tests())
+    asyncio.run(test_submission_flow())

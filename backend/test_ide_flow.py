@@ -4,7 +4,7 @@ from app.main import app
 
 BASE_URL = "http://testserver/api/v1"
 
-async def run_ide_flow_tests():
+async def test_ide_flow():
     print("\n================================================================================")
     print("           LABFLOW PHASE 2 — MONACO IDE & TEST MODE VERIFICATION               ")
     print("================================================================================\n")
@@ -140,4 +140,4 @@ int main() {
         print("================================================================================\n")
 
 if __name__ == "__main__":
-    asyncio.run(run_ide_flow_tests())
+    asyncio.run(test_ide_flow())

@@ -3,7 +3,7 @@ import ssl
 from pymongo import AsyncMongoClient
 from app.config.settings import settings
 
-async def main():
+async def test_db():
     print("Testing MongoDB Atlas connection...")
     print("URI:", settings.MONGODB_URI)
     try:
@@ -18,4 +18,4 @@ async def main():
         print("ERROR:", e)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(test_db())

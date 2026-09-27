@@ -4,7 +4,7 @@ from app.main import app
 
 BASE_URL = "http://testserver/api/v1"
 
-async def run_tests():
+async def test_admin_flow():
     print("\n=======================================================")
     print("STARTING LABFLOW ADMIN & ROLE AUTHORIZATION TEST SUITE")
     print("=======================================================\n")
@@ -153,4 +153,4 @@ async def run_tests():
     print("=======================================================\n")
 
 if __name__ == "__main__":
-    asyncio.run(run_tests())
+    asyncio.run(test_admin_flow())

@@ -4,7 +4,7 @@ from app.main import app
 
 BASE_URL = "http://testserver/api/v1"
 
-async def run_execution_flow_tests():
+async def test_execution_flow():
     print("\n================================================================================")
     print("           LABFLOW PHASE 3 — EXTERNAL JUDGE0 EXECUTION ENGINE TESTS           ")
     print("================================================================================\n")
@@ -153,4 +153,4 @@ public class Main {
     print("================================================================================\n")
 
 if __name__ == "__main__":
-    asyncio.run(run_execution_flow_tests())
+    asyncio.run(test_execution_flow())

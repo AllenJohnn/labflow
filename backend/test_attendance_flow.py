@@ -4,7 +4,7 @@ from app.main import app
 
 BASE_URL = "http://testserver/api/v1"
 
-async def run_attendance_tests():
+async def test_attendance_flow():
     print("\n=======================================================")
     print("STARTING POLISHED LABFLOW ATTENDANCE & TIMETABLE TEST SUITE")
     print("=======================================================\n")
@@ -174,4 +174,4 @@ async def run_attendance_tests():
     print("=======================================================\n")
 
 if __name__ == "__main__":
-    asyncio.run(run_attendance_tests())
+    asyncio.run(test_attendance_flow())

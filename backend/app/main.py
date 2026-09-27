@@ -38,10 +38,14 @@ async def async_db_init():
     except Exception as e:
         print(f"[Database] Startup initialization notice: {e}")
 
+from app.database.mongodb import db_wrapper
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    db_wrapper.connect()
     asyncio.create_task(async_db_init())
     yield
+    await db_wrapper.close()
 
 from fastapi.responses import JSONResponse
 from app.services.admin_service import is_maintenance_active, get_system_settings
