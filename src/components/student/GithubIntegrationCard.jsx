@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getGithubStatus, disconnectGithub } from "../../services/studentService";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
