@@ -98,12 +98,9 @@ export default function StudentAttendance() {
     switch (status?.toLowerCase()) {
       case "present":
         return "bg-emerald-50 text-emerald-700 border border-emerald-200";
-      case "late":
-        return "bg-amber-50 text-amber-700 border border-amber-200";
       case "absent":
         return "bg-rose-50 text-rose-700 border border-rose-200";
-      case "excused":
-        return "bg-sky-50 text-sky-700 border border-sky-200";
+
       default:
         return "bg-slate-50 text-slate-700 border border-slate-200";
     }
@@ -113,12 +110,8 @@ export default function StudentAttendance() {
     switch (status?.toLowerCase()) {
       case "present":
         return "bg-emerald-500";
-      case "late":
-        return "bg-amber-500";
       case "absent":
         return "bg-rose-500";
-      case "excused":
-        return "bg-sky-500";
       default:
         return "bg-slate-300";
     }
@@ -144,20 +137,7 @@ export default function StudentAttendance() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={handleManualCheckIn}
-              disabled={checkingIn}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#164a9c] px-4 py-2 text-[13px] font-semibold text-white shadow-xs transition hover:bg-[#123e85] focus:outline-none focus:ring-2 focus:ring-[#164a9c]/50 disabled:opacity-60 cursor-pointer"
-            >
-              {checkingIn ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <ShieldCheck className="h-4 w-4" />
-              )}
-              <span>Check In to Active Lab</span>
-            </button>
-          </div>
+
         </div>
 
         {statusMessage.text && (
@@ -195,17 +175,7 @@ export default function StudentAttendance() {
               <span className="text-3xl font-bold tracking-tight text-slate-900 font-brand">
                 {data?.overall_percentage ?? 90.9}%
               </span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                  (data?.overall_percentage ?? 90.9) >= requiredThreshold
-                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                    : "bg-amber-50 text-amber-700 border border-amber-200"
-                }`}
-              >
-                {(data?.overall_percentage ?? 90.9) >= requiredThreshold
-                  ? "Above Required Threshold"
-                  : "Attendance Warning"}
-              </span>
+
             </div>
             <p className="mt-2 text-[12px] text-slate-400">
               Required Attendance: Min. {requiredThreshold}%
@@ -318,9 +288,7 @@ export default function StudentAttendance() {
 
                 <div className="mt-4 flex items-center justify-between text-[12px] text-slate-500">
                   <span>Sessions: <strong className="text-slate-800">{course.attended} / {course.total}</strong></span>
-                  <span className={course.percentage >= requiredThreshold ? "text-emerald-700 font-medium" : "text-amber-700 font-medium"}>
-                    {course.percentage >= requiredThreshold ? "Above Required Threshold" : "Attendance Warning"}
-                  </span>
+
                 </div>
 
                 <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200/80">
@@ -453,17 +421,10 @@ export default function StudentAttendance() {
                   <span>Present</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                  <span>Late</span>
-                </div>
-                <div className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
                   <span>Absent</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-                  <span>Excused</span>
-                </div>
+
               </div>
             </div>
 

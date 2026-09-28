@@ -98,7 +98,7 @@ export default function StandaloneIDE() {
 
           <div className="flex items-center gap-2">
             <MonitorPlay className="h-4 w-4 sm:h-5 sm:w-5 text-white/90" />
-            <span className="text-[13px] sm:text-[14px] font-semibold tracking-wide text-white truncate">Code Sandbox</span>
+            <span className="text-[13px] sm:text-[14px] font-semibold tracking-wide text-white truncate">IDE</span>
           </div>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">

@@ -111,15 +111,11 @@ export default function FacultyAttendance() {
         });
         const presentCnt = updated.filter((r) => r.status === "Present").length;
         const absentCnt = updated.filter((r) => r.status === "Absent").length;
-        const lateCnt = updated.filter((r) => r.status === "Late").length;
-        const excusedCnt = updated.filter((r) => r.status === "Excused").length;
         setSessionData({
           ...sessionData,
           students: updated,
           present_count: presentCnt,
           absent_count: absentCnt,
-          late_count: lateCnt,
-          excused_count: excusedCnt,
         });
       }
       setStatusMessage({
@@ -239,9 +235,7 @@ export default function FacultyAttendance() {
               <span className="text-3xl font-bold tracking-tight text-slate-900 font-brand">
                 {currentLab?.avg_attendance_percentage || 93.4}%
               </span>
-              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
-                Above Required Threshold
-              </span>
+
             </div>
             <p className="mt-2 text-[12px] text-slate-400">
               {currentLab?.total_sessions || 11} laboratory sessions conducted
@@ -356,7 +350,7 @@ export default function FacultyAttendance() {
 
             <div className="flex items-center gap-2">
               <span className="text-[12px] text-slate-400">Filter Status:</span>
-              {["all", "Present", "Absent", "Late", "Excused"].map((st) => (
+              {["all", "Present", "Absent"].map((st) => (
                 <button
                   key={st}
                   onClick={() => setStatusFilter(st)}
@@ -439,22 +433,18 @@ export default function FacultyAttendance() {
                             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
                               st.status === "Present"
                                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                : st.status === "Late"
-                                ? "bg-amber-50 text-amber-700 border border-amber-200"
                                 : st.status === "Absent"
                                 ? "bg-rose-50 text-rose-700 border border-rose-200"
-                                : "bg-sky-50 text-sky-700 border border-sky-200"
+                                : "bg-slate-50 text-slate-700 border border-slate-200"
                             }`}
                           >
                             <span
                               className={`h-1.5 w-1.5 rounded-full ${
                                 st.status === "Present"
                                   ? "bg-emerald-600"
-                                  : st.status === "Late"
-                                  ? "bg-amber-600"
                                   : st.status === "Absent"
                                   ? "bg-rose-600"
-                                  : "bg-sky-600"
+                                  : "bg-slate-600"
                               }`}
                             />
                             {st.status}
@@ -478,18 +468,6 @@ export default function FacultyAttendance() {
                               Present
                             </button>
                             <button
-                              onClick={() => handleStatusChange(st.student_id, "Late")}
-                              disabled={isCurrentUpdating}
-                              title="Mark Late"
-                              className={`rounded px-2 py-1 text-[11px] font-bold transition cursor-pointer ${
-                                st.status === "Late"
-                                  ? "bg-amber-600 text-white"
-                                  : "text-slate-600 hover:bg-amber-50 hover:text-amber-700"
-                              }`}
-                            >
-                              Late
-                            </button>
-                            <button
                               onClick={() => handleStatusChange(st.student_id, "Absent")}
                               disabled={isCurrentUpdating}
                               title="Mark Absent"
@@ -500,18 +478,6 @@ export default function FacultyAttendance() {
                               }`}
                             >
                               Absent
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(st.student_id, "Excused")}
-                              disabled={isCurrentUpdating}
-                              title="Mark Excused"
-                              className={`rounded px-2 py-1 text-[11px] font-bold transition cursor-pointer ${
-                                st.status === "Excused"
-                                  ? "bg-sky-600 text-white"
-                                  : "text-slate-600 hover:bg-sky-50 hover:text-sky-700"
-                              }`}
-                            >
-                              Excused
                             </button>
                           </div>
                         </td>

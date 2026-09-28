@@ -240,7 +240,7 @@ async def record_student_lab_attendance(student_doc: dict, course_id: str, is_ma
         if current_minutes <= (start_minutes + grace_period_mins):
             attendance_status = "Present"
         else:
-            attendance_status = "Late"
+            attendance_status = "Absent"
     except Exception:
         attendance_status = "Present"
 
@@ -322,15 +322,15 @@ async def get_student_attendance_data(student_doc: dict):
                 status = "Absent"
                 marked_by = "Faculty (Unexcused Absence)"
             elif idx == 8:
-                status = "Late"
-                marked_by = "System (Late Entry)"
+                status = "Absent"
+                marked_by = "System (Absent Entry)"
             else:
                 status = "Present"
                 marked_by = "System (Lab Entry)"
 
         if cid in course_counts:
             course_counts[cid]["total"] += 1
-            if status in ["Present", "Late"]:
+            if status == "Present":
                 course_counts[cid]["attended"] += 1
 
         calendar_days.append({
@@ -440,8 +440,8 @@ async def get_faculty_session_attendance_roster(course_id: str, session_date: st
                 status = "Absent"
                 marked_by = "Faculty (Unexcused)"
             elif sid.endswith("2010"):
-                status = "Late"
-                marked_by = "System (Late Entry)"
+                status = "Absent"
+                marked_by = "System (Absent Entry)"
             else:
                 status = "Present"
                 marked_by = "System (Lab Entry)"
@@ -459,8 +459,6 @@ async def get_faculty_session_attendance_roster(course_id: str, session_date: st
 
     present_cnt = sum(1 for r in student_records if r["status"] == "Present")
     absent_cnt = sum(1 for r in student_records if r["status"] == "Absent")
-    late_cnt = sum(1 for r in student_records if r["status"] == "Late")
-    excused_cnt = sum(1 for r in student_records if r["status"] == "Excused")
 
     return {
         "course_id": cid,
@@ -468,9 +466,7 @@ async def get_faculty_session_attendance_roster(course_id: str, session_date: st
         "total_enrolled": len(student_records),
         "present_count": present_cnt,
         "absent_count": absent_cnt,
-        "late_count": late_cnt,
-        "excused_count": excused_cnt,
-        "attendance_percentage": round(((present_cnt + late_cnt) / len(student_records) * 100), 1) if student_records else 0,
+        "attendance_percentage": round((present_cnt / len(student_records) * 100), 1) if student_records else 0,
         "students": student_records
     }
 

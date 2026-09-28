@@ -362,7 +362,7 @@ async def upload_laboratory_syllabus(
 
 class SingleAttendanceUpdateSchema(BaseModel):
     date: str = Field(..., description="Date (YYYY-MM-DD)")
-    status: str = Field(..., description="Status (Present, Absent, Late, Excused)")
+    status: str = Field(..., description="Status (Present, Absent)")
 
 class BatchAttendanceUpdateSchema(BaseModel):
     date: str = Field(..., description="Date (YYYY-MM-DD)")

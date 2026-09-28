@@ -36,7 +36,7 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
       icon: FileText,
     },
     {
-      name: "Code Sandbox",
+      name: "IDE",
       path: "/student/ide",
       icon: Terminal,
     },

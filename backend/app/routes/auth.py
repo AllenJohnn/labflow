@@ -40,6 +40,16 @@ async def student_login(credentials: LoginCredentialsSchema):
             detail="Invalid student email or password"
         )
 
+    try:
+        from app.services.attendance_service import get_active_or_next_lab_session, record_student_lab_attendance
+        session_info = get_active_or_next_lab_session()
+        if session_info and session_info.get("active_session"):
+            course_id = session_info["active_session"].get("course_id")
+            if course_id:
+                await record_student_lab_attendance(student, course_id, is_manual=False)
+    except Exception as e:
+        print(f"[Auth] Auto attendance error: {e}")
+
     token = create_access_token(
         user_id=str(student["_id"]),
         role="student",
@@ -206,6 +216,16 @@ async def google_callback(request: Request):
         else:
             print(f"[Auth] Existing student found: {user_obj.get('email')}")
         role = "student"
+
+        try:
+            from app.services.attendance_service import get_active_or_next_lab_session, record_student_lab_attendance
+            session_info = get_active_or_next_lab_session()
+            if session_info and session_info.get("active_session"):
+                course_id = session_info["active_session"].get("course_id")
+                if course_id:
+                    await record_student_lab_attendance(user_obj, course_id, is_manual=False)
+        except Exception as e:
+            print(f"[Auth] Auto attendance error: {e}")
 
     access_token = create_access_token(
         user_id=str(user_obj["_id"]),
