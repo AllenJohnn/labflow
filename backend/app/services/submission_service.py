@@ -409,6 +409,7 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
         IN_MEMORY_SUBMISSIONS.append(dict(sub_doc))
 
     # Persist to MongoDB
+    saved = None
     try:
         await db.submissions.update_one(
             {"submission_id": submission_id},
@@ -419,13 +420,84 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
         if saved:
             saved["_id"] = str(saved["_id"])
             saved["id"] = saved.get("submission_id", str(saved["_id"]))
-            return {"status": "success", "message": "Work submitted successfully", "data": saved}
     except Exception as e:
         print(f"[Submission] DB save submission notice: {e}")
+        saved = dict(sub_doc)
+        saved["_id"] = submission_id
+        saved["id"] = submission_id
 
-    sub_doc["_id"] = submission_id
-    sub_doc["id"] = submission_id
-    return {"status": "success", "message": "Work submitted successfully", "data": sub_doc}
+    # Fetch full student document to get github connection details
+    from app.database.mongodb import db
+    full_student = await db.students.find_one({"email": stu_email}) or {}
+    github_conf = full_student.get("github", {})
+    
+    if github_conf.get("connected") and github_conf.get("encrypted_access_token"):
+        try:
+            from app.services.github_service import github_service, decrypt_token
+            import asyncio
+            import re
+            
+            token = decrypt_token(github_conf["encrypted_access_token"])
+            owner = github_conf.get("username")
+            
+            # Determine Repository Name from Subject/Laboratory Name
+            raw_repo_name = lab_meta.get("name", lab_meta.get("code", "laboratory"))
+            repo = re.sub(r'[^a-zA-Z0-9-]', '-', raw_repo_name)
+            repo = re.sub(r'-+', '-', repo).strip('-')
+            branch = "main"
+            
+            # Auto-create repository if it doesn't exist
+            repo_data = await github_service.get_repository(token, owner, repo)
+            if not repo_data:
+                await github_service.create_repository(token, repo, f"Laboratory Submissions for {raw_repo_name}", True)
+            
+            ext_map = {"c": ".c", "java": ".java", "python": ".py"}
+            ext = ext_map.get(language, ".txt")
+            
+            # Determine Exercise Number
+            ex_num = exercise.get("exercise_number", "1")
+            ex_num_clean = str(int(ex_num)) if ex_num.isdigit() else ex_num
+            
+            path = f"exp{ex_num_clean}{ext}"
+            message = f"LabFlow: Submit {lab_meta.get('code', cid.upper())} {exercise.get('title', 'Laboratory Exercise')}"
+            
+            # Perform GitHub API call (we wait for it here, but it doesn't fail the submission if it errors)
+            gh_resp = await github_service.create_or_update_file(
+                token=token, owner=owner, repo=repo, path=path, content=code, message=message, branch=branch
+            )
+            
+            commit_sha = gh_resp.get("commit", {}).get("sha")
+            commit_url = gh_resp.get("commit", {}).get("html_url")
+            
+            gh_meta = {
+                "synced": True,
+                "repository": repo,
+                "branch": branch,
+                "path": path,
+                "commit_sha": commit_sha,
+                "commit_url": commit_url
+            }
+        except Exception as e:
+            gh_meta = {
+                "synced": False,
+                "error": str(e)
+            }
+        
+        # Update MongoDB with GitHub sync result
+        try:
+            await db.submissions.update_one(
+                {"submission_id": submission_id},
+                {"$set": {"github": gh_meta}}
+            )
+            saved["github"] = gh_meta
+        except Exception as e:
+            print(f"[Submission] DB update github metadata notice: {e}")
+
+    warning = ""
+    if saved.get("github", {}).get("synced") is False:
+        warning = " Note: GitHub synchronization failed."
+
+    return {"status": "success", "message": f"Work submitted successfully.{warning}", "data": saved}
 
 async def get_faculty_course_submissions(faculty_doc: dict, course_id: str, exercise_id: str | None = None, status_filter: str | None = None):
     """Retrieve full submission records and cohort summary for faculty's authorized laboratory."""

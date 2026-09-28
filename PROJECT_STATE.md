@@ -39,6 +39,14 @@
    - Created `TestCasesDialog.jsx` inside the Faculty UI (`LaboratoryDetail.jsx`) to let faculty assign public/hidden test configurations natively.
    - Stripped away generic aesthetic themes; upgraded `globals.css` with a strict Tailwind v4 monochromatic developer palette.
 
+6. **Phase 5A/5B/5C: GitHub Integration (Revised Auto-Create Architecture)**
+   - Performed GitHub OAuth App integration design.
+   - Built backend logic for handling OAuth callbacks, identity retrieval, token encryption, and expiration.
+   - Integrated GitHub submission sync to seamlessly and optionally persist MongoDB-first submissions to GitHub.
+   - Designed frontend `GithubIntegrationCard` to manage OAuth callback connection state.
+   - **Revised Architecture:** Replaced manual repository selection with automated provisioning. The backend automatically calculates the correct repository name from the Laboratory/Subject metadata and seamlessly auto-creates a private repository on the student's GitHub if it doesn't exist.
+   - **Version Control:** Natively fetches existing file SHAs on resubmission, allowing the system to update code submissions as new commits over existing files without causing filename duplication.
+   - Appended GitHub Sync status on existing submission panels.
+   
 ## Future Phases
-- Phase 5: CI/CD & Deployment
-- Phase 6: GitHub Integration
+- Phase 6: CI/CD & Deployment

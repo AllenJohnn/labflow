@@ -1,4 +1,4 @@
-﻿import { FileText, Award, MessageSquare, Clock, User } from "lucide-react";
+import { FileText, Award, MessageSquare, Clock, User } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 export default function ExercisePanel({
@@ -107,6 +107,19 @@ export default function ExercisePanel({
               <div className="flex items-center justify-between text-[12px]">
                 <span className="font-medium text-muted-foreground">Last submitted:</span>
                 <span className="font-semibold text-foreground">{submittedAt}</span>
+              </div>
+            )}
+
+            {submission?.github && (
+              <div className="flex items-center justify-between text-[12px] pt-1">
+                <span className="font-medium text-muted-foreground">GitHub Sync:</span>
+                {submission.github.synced ? (
+                  <span className="text-emerald-600 font-medium">Synced</span>
+                ) : (
+                  <span className="text-red-500 font-medium cursor-help" title={submission.github.error || "Failed to sync to GitHub. The LabFlow submission was saved successfully."}>
+                    Sync Failed
+                  </span>
+                )}
               </div>
             )}
 

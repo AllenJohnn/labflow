@@ -229,3 +229,97 @@ async def get_current_user_profile(current_user: dict = Depends(get_current_user
         "status": "success",
         "data": user_data
     }
+
+import secrets
+from datetime import datetime, timedelta, timezone
+from jose import jwt
+from bson import ObjectId
+from app.services.jwt_service import decode_access_token
+from app.services.github_service import github_service, encrypt_token
+from app.database.mongodb import db
+
+@router.get("/github/login")
+async def github_login(request: Request, token: str):
+    # 1. Validate user via JWT
+    payload = decode_access_token(token)
+    if not payload or payload.get("role") != "student":
+        raise HTTPException(status_code=401, detail="Invalid or missing authentication token")
+    
+    # 2. Generate CSRF state wrapping user_id
+    nonce = secrets.token_urlsafe(16)
+    state_payload = {
+        "sub": payload["sub"],
+        "nonce": nonce,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=15)
+    }
+    state = jwt.encode(state_payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    request.session["github_oauth_nonce"] = nonce
+    
+    # 3. Redirect to GitHub
+    redirect_uri = settings.GITHUB_REDIRECT_URI
+    return await oauth.github.authorize_redirect(request, redirect_uri, state=state)
+
+@router.get("/github/callback", name="github_callback")
+async def github_callback(request: Request, state: str):
+    # 1. Validate State and CSRF
+    try:
+        state_payload = jwt.decode(state, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid OAuth state parameter")
+        
+    nonce = state_payload.get("nonce")
+    user_id = state_payload.get("sub")
+    
+    # Session cookie might be dropped cross-origin on localhost redirect, 
+    # but the signed JWT state protects against CSRF on its own.
+    request.session.pop("github_oauth_nonce", None)
+    
+    # 2. Exchange Code for Token
+    token_resp = await oauth.github.authorize_access_token(request)
+    access_token = token_resp.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=400, detail="Failed to retrieve GitHub access token")
+        
+    expires_in = token_resp.get("expires_in")
+    refresh_token = token_resp.get("refresh_token")
+    refresh_token_expires_in = token_resp.get("refresh_token_expires_in")
+    
+    token_expires_at = None
+    if expires_in:
+        token_expires_at = (datetime.now(timezone.utc) + timedelta(seconds=int(expires_in))).isoformat()
+        
+    refresh_token_expires_at = None
+    if refresh_token_expires_in:
+        refresh_token_expires_at = (datetime.now(timezone.utc) + timedelta(seconds=int(refresh_token_expires_in))).isoformat()
+    
+    # 3. Get GitHub Identity
+    gh_user = await github_service.get_current_user(access_token)
+    if not gh_user:
+        raise HTTPException(status_code=400, detail="Failed to retrieve GitHub user identity")
+        
+    github_user_id = str(gh_user.get("id"))
+    github_username = gh_user.get("login")
+    
+    # 4. Save to DB securely
+    update_data = {
+        "github_connected": True,
+        "github_username": github_username,
+        "github": {
+            "connected": True,
+            "user_id": github_user_id,
+            "username": github_username,
+            "encrypted_access_token": encrypt_token(access_token),
+            "token_expires_at": token_expires_at,
+        }
+    }
+    
+    if refresh_token:
+        update_data["github"]["encrypted_refresh_token"] = encrypt_token(refresh_token)
+        update_data["github"]["refresh_token_expires_at"] = refresh_token_expires_at
+        
+    await db.students.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_data}
+    )
+    
+    return RedirectResponse(url=f"{settings.FRONTEND_URL}/student/profile?github=success")

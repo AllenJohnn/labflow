@@ -38,4 +38,10 @@ class Settings:
     IDE_MAX_OUTPUT_BYTES = int(os.getenv("IDE_MAX_OUTPUT_BYTES", "65536")) # 64KB
     IDE_MEMORY_LIMIT_KB = int(os.getenv("IDE_MEMORY_LIMIT_KB", "128000")) # 128MB
 
+    # GitHub Integration Phase 5B
+    GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", "")
+    GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "")
+    GITHUB_REDIRECT_URI = os.getenv("GITHUB_REDIRECT_URI", "http://localhost:8000/api/v1/auth/github/callback")
+    GITHUB_ENCRYPTION_KEY = os.getenv("GITHUB_ENCRYPTION_KEY", "")
+
 settings = Settings()

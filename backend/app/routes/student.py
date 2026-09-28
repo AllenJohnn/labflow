@@ -320,3 +320,26 @@ async def student_manual_check_in(
             "summary": summary
         }
     }
+
+@router.get("/github/status")
+async def github_status(current_student: dict = Depends(get_current_student)):
+    github = current_student.get("github", {})
+    return {
+        "status": "success",
+        "data": {
+            "connected": github.get("connected", False),
+            "username": github.get("username", current_student.get("github_username"))
+        }
+    }
+
+
+@router.post("/github/disconnect")
+async def github_disconnect(current_student: dict = Depends(get_current_student)):
+    from app.database.mongodb import db
+    from bson import ObjectId
+    
+    await db.students.update_one(
+        {"_id": ObjectId(current_student["_id"])},
+        {"$unset": {"github": ""}, "$set": {"github_connected": False}}
+    )
+    return {"status": "success", "message": "GitHub disconnected successfully"}

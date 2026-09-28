@@ -47,6 +47,14 @@ async def get_current_user(
 
     user["_id"] = str(user["_id"])
     user["role"] = role
+    
+    # Security: Never expose encrypted GitHub tokens in standard user payload
+    if "github" in user and isinstance(user["github"], dict):
+        user["github"].pop("encrypted_access_token", None)
+        user["token_expires_at"] = user["github"].pop("token_expires_at", None)
+        user["github"].pop("encrypted_refresh_token", None)
+        user["github"].pop("refresh_token_expires_at", None)
+    
     return user
 
 async def get_current_student(current_user: dict = Depends(get_current_user)):

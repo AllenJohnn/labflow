@@ -465,3 +465,23 @@ export const runExerciseTests = async (exerciseId, payload) => {
 };
 
 
+
+export const getGithubStatus = async () => {
+  try {
+    const res = await api.get(`/student/github/status?t=${new Date().getTime()}`);
+    return res.data?.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
+
+export const disconnectGithub = async () => {
+  try {
+    const res = await api.post('/student/github/disconnect');
+    return res.data?.data;
+  } catch (err) {
+    throw err;
+  }
+};
+
