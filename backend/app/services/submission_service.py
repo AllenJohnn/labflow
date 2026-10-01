@@ -429,15 +429,18 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
     # Fetch full student document to get github connection details
     from app.database.mongodb import db
     full_student = await db.students.find_one({"email": stu_email}) or {}
-    github_conf = full_student.get("github", {})
+    github_conf = full_student.get("github") or {}
+    is_connected = github_conf.get("connected", full_student.get("github_connected", False))
     
-    if github_conf.get("connected") and github_conf.get("encrypted_access_token"):
+    if is_connected and github_conf.get("encrypted_access_token"):
         try:
-            from app.services.github_service import github_service, decrypt_token
-            import asyncio
+            from app.services.github_service import github_service, get_valid_token
             import re
             
-            token = decrypt_token(github_conf["encrypted_access_token"])
+            token = await get_valid_token(github_conf, stu_db_id)
+            if not token:
+                raise ValueError("GitHub token expired and could not be refreshed. Please reconnect GitHub.")
+            
             owner = github_conf.get("username")
             
             # Determine Repository Name from Subject/Laboratory Name
@@ -445,11 +448,6 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
             repo = re.sub(r'[^a-zA-Z0-9-]', '-', raw_repo_name)
             repo = re.sub(r'-+', '-', repo).strip('-')
             branch = "main"
-            
-            # Auto-create repository if it doesn't exist
-            repo_data = await github_service.get_repository(token, owner, repo)
-            if not repo_data:
-                await github_service.create_repository(token, repo, f"Laboratory Submissions for {raw_repo_name}", True)
             
             ext_map = {"c": ".c", "java": ".java", "python": ".py"}
             ext = ext_map.get(language, ".txt")
@@ -461,9 +459,12 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
             path = f"exp{ex_num_clean}{ext}"
             message = f"LabFlow: Submit {lab_meta.get('code', cid.upper())} {exercise.get('title', 'Laboratory Exercise')}"
             
-            # Perform GitHub API call (we wait for it here, but it doesn't fail the submission if it errors)
-            gh_resp = await github_service.create_or_update_file(
-                token=token, owner=owner, repo=repo, path=path, content=code, message=message, branch=branch
+            # Use the reliable ensure_repo_and_push helper which handles
+            # repo creation delays and retries on transient errors
+            gh_resp = await github_service.ensure_repo_and_push(
+                token=token, owner=owner, repo_name=repo,
+                repo_description=f"Laboratory Submissions for {raw_repo_name}",
+                path=path, content=code, message=message, branch=branch
             )
             
             commit_sha = gh_resp.get("commit", {}).get("sha")
@@ -478,6 +479,7 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
                 "commit_url": commit_url
             }
         except Exception as e:
+            print(f"[GitHub] Sync failed for {submission_id}: {e}")
             gh_meta = {
                 "synced": False,
                 "error": str(e)
@@ -494,7 +496,7 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
             print(f"[Submission] DB update github metadata notice: {e}")
 
     warning = ""
-    if saved.get("github", {}).get("synced") is False:
+    if (saved.get("github") or {}).get("synced") is False:
         warning = " Note: GitHub synchronization failed."
 
     return {"status": "success", "message": f"Work submitted successfully.{warning}", "data": saved}

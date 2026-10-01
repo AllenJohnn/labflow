@@ -41,9 +41,9 @@ export default function StudentSubmissions() {
   }, [refreshKey]);
 
   const totalCount = submissions.length;
-  const evaluatedCount = submissions.filter((s) => s.status === "Evaluated").length;
-  const reviewedCount = submissions.filter((s) => s.status === "Reviewed").length;
-  const pendingCount = submissions.filter((s) => s.status === "Submitted").length;
+  const evaluatedCount = submissions.filter((s) => s.status?.toLowerCase() === "evaluated").length;
+  const reviewedCount = submissions.filter((s) => s.status?.toLowerCase() === "reviewed").length;
+  const pendingCount = submissions.filter((s) => s.status?.toLowerCase() === "submitted").length;
 
   return (
     <StudentLayout announcements={announcements}>
@@ -156,16 +156,16 @@ export default function StudentSubmissions() {
                   <div className="flex items-center gap-3">
                     <span
                       className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
-                        sub.status === "Evaluated"
+                        sub.status?.toLowerCase() === "evaluated"
                           ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
-                          : sub.status === "Reviewed"
+                          : sub.status?.toLowerCase() === "reviewed"
                           ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
-                          : sub.status === "Submitted"
+                          : sub.status?.toLowerCase() === "submitted"
                           ? "bg-amber-50 text-amber-800 border-amber-200"
                           : "bg-slate-100 text-slate-600 border-slate-200"
                       }`}
                     >
-                      {sub.status} {sub.marks ? `· ${sub.marks}` : ""}
+                      {sub.status} {sub.marks ? `• ${sub.marks}` : ""}
                     </span>
                     <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#164a9c] transition-colors" />
                   </div>

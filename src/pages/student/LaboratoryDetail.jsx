@@ -136,7 +136,7 @@ export default function LaboratoryDetail() {
                           {ex.title}
                         </h4>
                         <p className="text-[11px] text-slate-400">
-                          Assigned by {ex.faculty} {ex.dueDate ? `· Due: ${ex.dueDate}` : ""}
+                          Assigned by {ex.faculty} {ex.dueDate ? `• Due: ${ex.dueDate}` : ""}
                         </p>
                       </div>
                     </div>
@@ -144,11 +144,11 @@ export default function LaboratoryDetail() {
                     <div className="flex items-center gap-3">
                       <span
                         className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
-                          ex.status === "Evaluated"
+                          ex.status?.toLowerCase() === "evaluated"
                             ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
-                            : ex.status === "Reviewed"
+                            : ex.status?.toLowerCase() === "reviewed"
                             ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
-                            : ex.status === "Submitted"
+                            : ex.status?.toLowerCase() === "submitted"
                             ? "bg-amber-50 text-amber-800 border-amber-200"
                             : "bg-slate-100 text-slate-600 border-slate-200"
                         }`}

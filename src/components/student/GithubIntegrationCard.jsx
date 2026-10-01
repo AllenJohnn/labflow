@@ -26,10 +26,6 @@ export default function GithubIntegrationCard() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
 
-  useEffect(() => {
-    loadStatus();
-  }, []);
-
   const loadStatus = async () => {
     try {
       const data = await getGithubStatus();
@@ -40,6 +36,10 @@ export default function GithubIntegrationCard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadStatus();
+  }, []);
 
   const handleConnect = () => {
     const token = localStorage.getItem("labflow_token");

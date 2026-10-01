@@ -323,11 +323,15 @@ async def student_manual_check_in(
 
 @router.get("/github/status")
 async def github_status(current_student: dict = Depends(get_current_student)):
-    github = current_student.get("github", {})
+    github = current_student.get("github") or {}
+    is_connected = github.get("connected")
+    if is_connected is None:
+        is_connected = current_student.get("github_connected", False)
+        
     return {
         "status": "success",
         "data": {
-            "connected": github.get("connected", False),
+            "connected": is_connected,
             "username": github.get("username", current_student.get("github_username"))
         }
     }

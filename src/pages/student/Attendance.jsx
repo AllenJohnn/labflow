@@ -3,20 +3,14 @@ import {
   Calendar as CalendarIcon,
   CheckCircle2,
   Clock,
-  AlertTriangle,
   BookOpen,
-  RefreshCw,
   MapPin,
-  ShieldCheck,
-  Award,
 } from "lucide-react";
 import StudentLayout from "../../components/layout/StudentLayout";
-import { getStudentAttendance, checkInStudentAttendance } from "../../services/studentService";
+import { getStudentAttendance } from "../../services/studentService";
 
 export default function StudentAttendance() {
   const [data, setData] = useState(null);
-  const [checkingIn, setCheckingIn] = useState(false);
-  const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
   const [activeTab, setActiveTab] = useState("calendar");
   const [selectedDateSessions, setSelectedDateSessions] = useState([]);
   const [selectedDateStr, setSelectedDateStr] = useState("2026-08-15");
@@ -44,28 +38,6 @@ export default function StudentAttendance() {
       isMounted = false;
     };
   }, []);
-
-  const handleManualCheckIn = async () => {
-    try {
-      setCheckingIn(true);
-      setStatusMessage({ text: "", type: "" });
-      const res = await checkInStudentAttendance();
-      if (res?.data?.summary) {
-        setData(res.data.summary);
-      }
-      setStatusMessage({
-        text: res.message || "Attendance recorded for current active laboratory session.",
-        type: "success",
-      });
-    } catch (err) {
-      setStatusMessage({
-        text: err.response?.data?.detail || "No active scheduled laboratory session found for check-in at this time.",
-        type: "error",
-      });
-    } finally {
-      setCheckingIn(false);
-    }
-  };
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -100,7 +72,6 @@ export default function StudentAttendance() {
         return "bg-emerald-50 text-emerald-700 border border-emerald-200";
       case "absent":
         return "bg-rose-50 text-rose-700 border border-rose-200";
-
       default:
         return "bg-slate-50 text-slate-700 border border-slate-200";
     }
@@ -117,71 +88,38 @@ export default function StudentAttendance() {
     }
   };
 
-  const requiredThreshold = data?.required_threshold ?? 75.0;
+  const formatDateLabel = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  };
 
   return (
     <StudentLayout>
       <div className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-5">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] font-semibold uppercase tracking-wider text-[#159447]">
-                Department of Computer Applications • MCA S3
-              </span>
-            </div>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#164a9c] font-brand">
-              Laboratory Attendance & Schedule
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Authenticated laboratory session records, academic timetable, and course compliance tracking.
-            </p>
-          </div>
-
-
+        <div className="border-b border-slate-200/80 pb-5">
+          <h1 className="text-2xl font-bold tracking-tight text-[#164a9c] font-brand">
+            Attendance
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Track your laboratory attendance and session history.
+          </p>
         </div>
 
-        {statusMessage.text && (
-          <div
-            className={`flex items-center justify-between rounded-lg border p-4 text-[13px] ${
-              statusMessage.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border-rose-200 bg-rose-50 text-rose-800"
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              {statusMessage.type === "success" ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-              ) : (
-                <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
-              )}
-              <span>{statusMessage.text}</span>
-            </div>
-            <button
-              onClick={() => setStatusMessage({ text: "", type: "" })}
-              className="text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Card 1 */}
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-[12px] font-medium uppercase tracking-wider">Overall Attendance</span>
-              <Award className="h-4 w-4 text-[#164a9c]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight text-slate-900 font-brand">
-                {data?.overall_percentage ?? 90.9}%
+                {data ? `${data.overall_percentage}%` : "--%"}
               </span>
-
             </div>
-            <p className="mt-2 text-[12px] text-slate-400">
-              Required Attendance: Min. {requiredThreshold}%
-            </p>
           </div>
 
+          {/* Card 2 */}
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-[12px] font-medium uppercase tracking-wider">Sessions Attended</span>
@@ -189,75 +127,54 @@ export default function StudentAttendance() {
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-bold tracking-tight text-slate-900 font-brand">
-                {data?.total_attended ?? 10}
+                {data ? data.total_attended : "-"}
               </span>
               <span className="text-[14px] text-slate-400 font-medium">
-                / {data?.total_conducted ?? 11} conducted
+                / {data ? data.total_conducted : "-"}
               </span>
             </div>
             <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                style={{ width: `${data?.overall_percentage ?? 90.9}%` }}
+                style={{ width: `${data?.overall_percentage ?? 0}%` }}
               />
             </div>
           </div>
 
+          {/* Card 3 */}
           <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
             <div className="flex items-center justify-between text-slate-500">
-              <span className="text-[12px] font-medium uppercase tracking-wider">Next Lab Class</span>
+              <span className="text-[12px] font-medium uppercase tracking-wider">Next Laboratory</span>
               <Clock className="h-4 w-4 text-[#164a9c]" />
             </div>
             <div className="mt-3">
               <span className="text-[14px] font-bold text-slate-900 line-clamp-1">
-                {data?.upcoming_classes?.[0]?.name || "Advanced DBMS Lab"}
+                {data ? (data.upcoming_classes?.[0]?.name || "No upcoming classes") : "Loading..."}
               </span>
               <div className="mt-1 flex items-center gap-1.5 text-[12px] text-slate-500">
                 <span className="font-semibold text-[#164a9c]">
-                  {data?.upcoming_classes?.[0]?.day_label || "Wednesday"}
+                  {data?.upcoming_classes?.[0]?.day_label || "-"}
                 </span>
                 <span>•</span>
-                <span>{data?.upcoming_classes?.[0]?.start_time || "13:30"} - {data?.upcoming_classes?.[0]?.end_time || "16:30"}</span>
+                <span>
+                  {data?.upcoming_classes?.[0]?.start_time ? `${data?.upcoming_classes?.[0]?.start_time} - ${data?.upcoming_classes?.[0]?.end_time}` : "-"}
+                </span>
               </div>
             </div>
             <p className="mt-2 text-[11px] text-slate-400">
-              Location: {data?.upcoming_classes?.[0]?.location || "Database Systems Lab"}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-[12px] font-medium uppercase tracking-wider">Authentication Log</span>
-              <ShieldCheck className="h-4 w-4 text-[#159447]" />
-            </div>
-            <div className="mt-3">
-              <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-emerald-700">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                Authenticated Session Access
-              </span>
-              <p className="mt-1 text-[12px] text-slate-500 font-mono">
-                {data?.student_id || "FIT25MCA-2008"}
-              </p>
-            </div>
-            <p className="mt-2 text-[11px] text-slate-400">
-              Verified upon laboratory entry & timetable check
+              Location: {data?.upcoming_classes?.[0]?.location || "-"}
             </p>
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200/80 bg-white p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div>
-              <h2 className="text-[16px] font-semibold text-slate-900">
-                Laboratory Course Attendance Breakdown
-              </h2>
-              <p className="text-[12px] text-slate-400">
-                Per-course session breakdown for MCA Semester 3
-              </p>
-            </div>
-            <span className="text-[12px] font-medium text-slate-500">
-              Requirement: <strong className="text-slate-800">Min. {requiredThreshold}%</strong>
-            </span>
+          <div className="pb-4 border-b border-slate-100">
+            <h2 className="text-[16px] font-semibold text-slate-900">
+              Attendance by Laboratory
+            </h2>
+            <p className="text-[12px] text-slate-400">
+              Per-course session breakdown
+            </p>
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -275,29 +192,18 @@ export default function StudentAttendance() {
                       {course.name}
                     </h3>
                   </div>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                      course.percentage >= requiredThreshold
-                        ? "bg-emerald-100 text-emerald-800"
-                        : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
+                  <span className="rounded-full px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                     {course.percentage}%
                   </span>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between text-[12px] text-slate-500">
                   <span>Sessions: <strong className="text-slate-800">{course.attended} / {course.total}</strong></span>
-
                 </div>
 
                 <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200/80">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      course.percentage >= requiredThreshold
-                        ? "bg-emerald-500"
-                        : "bg-amber-500"
-                    }`}
+                    className="h-full rounded-full transition-all bg-[#164a9c]"
                     style={{ width: `${course.percentage}%` }}
                   />
                 </div>
@@ -341,7 +247,6 @@ export default function StudentAttendance() {
                     {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                   </h2>
                 </div>
-                <span className="text-[12px] text-slate-400">MCA S3 Lab Schedule</span>
               </div>
 
               <div className="grid grid-cols-7 gap-1 border-b border-slate-100 pb-2 text-center text-[12px] font-bold text-slate-400 uppercase">
@@ -357,7 +262,7 @@ export default function StudentAttendance() {
               <div className="mt-2 grid grid-cols-7 gap-1.5">
                 {calendarDays.map((dayNum, idx) => {
                   if (!dayNum) {
-                    return <div key={`empty-${idx}`} className="h-20 rounded-lg bg-slate-50/50" />;
+                    return <div key={`empty-${idx}`} className="h-16 rounded-lg bg-slate-50/50" />;
                   }
 
                   const daySessions = getRecordsForDay(dayNum);
@@ -369,7 +274,7 @@ export default function StudentAttendance() {
                     <button
                       key={`day-${dayNum}`}
                       onClick={() => handleSelectDay(dayNum)}
-                      className={`relative flex h-20 flex-col justify-between rounded-lg border p-2 text-left transition ${
+                      className={`relative flex h-16 flex-col items-center justify-center rounded-lg border p-2 transition ${
                         isSelected
                           ? "border-[#164a9c] ring-2 ring-[#164a9c]/20 bg-blue-50/30"
                           : hasSessions
@@ -377,38 +282,19 @@ export default function StudentAttendance() {
                           : "border-slate-100 bg-slate-50/40 text-slate-300 cursor-pointer"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[13px] font-bold ${hasSessions ? "text-slate-800" : "text-slate-400"}`}>
-                          {dayNum}
-                        </span>
-                        {hasSessions && (
-                          <div className="flex items-center gap-1">
-                            {daySessions.slice(0, 2).map((s, si) => (
-                              <span
-                                key={`dot-${si}`}
-                                className={`h-2 w-2 rounded-full ${getStatusDot(s.status)}`}
-                                title={`${s.code}: ${s.status}`}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {hasSessions ? (
-                        <div className="space-y-0.5">
-                          {daySessions.slice(0, 2).map((s, si) => (
-                            <div key={`chip-${si}`} className="flex items-center justify-between">
-                              <span className="font-mono text-[9px] font-bold text-slate-600 truncate max-w-[42px]">
-                                {s.code}
-                              </span>
-                              <span className={`rounded px-1 text-[8px] font-bold ${getStatusColor(s.status)}`}>
-                                {s.status}
-                              </span>
-                            </div>
+                      <span className={`text-[13px] font-bold ${hasSessions ? "text-slate-800" : "text-slate-400"}`}>
+                        {dayNum}
+                      </span>
+                      {hasSessions && (
+                        <div className="mt-1 flex items-center justify-center gap-1">
+                          {daySessions.slice(0, 3).map((s, si) => (
+                            <span
+                              key={`dot-${si}`}
+                              className={`h-2 w-2 rounded-full ${getStatusDot(s.status)}`}
+                              title={`${s.code}: ${s.status}`}
+                            />
                           ))}
                         </div>
-                      ) : (
-                        <div />
                       )}
                     </button>
                   );
@@ -424,20 +310,16 @@ export default function StudentAttendance() {
                   <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
                   <span>Absent</span>
                 </div>
-
               </div>
             </div>
 
-            <div className="space-y-6 lg:col-span-4">
+            <div className="lg:col-span-4">
               <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
                     <BookOpen className="h-4 w-4 text-[#164a9c]" />
-                    <span>Sessions on {selectedDateStr}</span>
+                    <span>{formatDateLabel(selectedDateStr)}</span>
                   </h3>
-                  <span className="text-[11px] font-semibold text-slate-400">
-                    {selectedDateSessions.length} Scheduled
-                  </span>
                 </div>
 
                 {selectedDateSessions.length > 0 ? (
@@ -464,51 +346,18 @@ export default function StudentAttendance() {
                             <MapPin className="h-3 w-3 text-slate-400" />
                             <span>{session.location}</span>
                           </p>
-                          <p className="text-slate-400 pt-1">
-                            Logged via: <span className="font-medium text-slate-700">{session.marked_by}</span>
-                          </p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-4 text-[13px] text-slate-400 italic">
-                    No laboratory sessions recorded for {selectedDateStr}. Select another date on the calendar.
-                  </p>
+                  <div className="mt-4">
+                    <p className="text-[13px] font-medium text-slate-700">No laboratory sessions</p>
+                    <p className="mt-1 text-[12px] text-slate-400">
+                      No attendance recorded for this date.
+                    </p>
+                  </div>
                 )}
-              </div>
-
-              <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs">
-                <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[#159447]" />
-                  <span>Upcoming Laboratory Classes</span>
-                </h3>
-
-                <div className="mt-3.5 space-y-2.5">
-                  {data?.upcoming_classes?.map((item, idx) => (
-                    <div
-                      key={`up-${idx}`}
-                      className="flex items-start gap-3 rounded-lg border border-slate-100 bg-[#f9fafb] p-3 transition hover:border-[#164a9c]/30 hover:bg-white"
-                    >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-blue-100 font-mono text-[11px] font-bold text-[#164a9c]">
-                        {item.day?.slice(0, 3)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-[13px] font-bold text-slate-900 truncate">
-                            {item.name}
-                          </h4>
-                        </div>
-                        <p className="mt-0.5 text-[11px] text-slate-500">
-                          {item.start_time} - {item.end_time} • {item.location}
-                        </p>
-                        <p className="mt-0.5 text-[11px] font-medium text-[#159447]">
-                          Faculty: {item.faculty}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

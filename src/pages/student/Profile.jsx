@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import StudentLayout from "../../components/layout/StudentLayout";
 import {
   getStudentProfile,
-  updateStudentProfile,
   getStudentAnnouncements,
   getCachedProfile,
   getCachedAnnouncements,

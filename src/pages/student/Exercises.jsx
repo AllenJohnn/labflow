@@ -99,7 +99,7 @@ export default function StudentExercises() {
                           Exercise {item.exerciseNumber || item.exercise_number}: {item.title}
                         </h4>
                         <p className="text-[12px] text-slate-500">
-                          Faculty: {item.faculty} {item.dueDate ? `· Due: ${item.dueDate}` : ""}
+                          Faculty: {item.faculty} {item.dueDate ? `• Due: ${item.dueDate}` : ""}
                         </p>
                       </div>
                     </div>
@@ -107,11 +107,11 @@ export default function StudentExercises() {
                     <div className="flex items-center gap-3">
                       <span
                         className={`text-[11px] font-semibold px-2.5 py-0.5 border ${
-                          item.status === "Evaluated"
+                          item.status?.toLowerCase() === "evaluated"
                             ? "bg-emerald-50 text-[#159447] border-[#159447]/20"
-                            : item.status === "Reviewed"
+                            : item.status?.toLowerCase() === "reviewed"
                             ? "bg-blue-50 text-[#164a9c] border-[#164a9c]/20"
-                            : item.status === "Submitted"
+                            : item.status?.toLowerCase() === "submitted"
                             ? "bg-amber-50 text-amber-800 border-amber-200"
                             : "bg-slate-100 text-slate-600 border-slate-200"
                         }`}
