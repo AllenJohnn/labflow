@@ -94,7 +94,7 @@ async def create_student(data: dict):
         "department": data.get("department", "MCA"),
         "semester": data.get("semester", 2),
         "github_username": github_user,
-        "github_connected": bool(github_user),
+        "github_connected": False,
         "phone": data.get("phone", ""),
         "avatar": data.get("avatar", ""),
         "role": "student",
@@ -160,7 +160,10 @@ async def update_student_profile(student_id: str, profile_data: dict):
     if "github_username" in profile_data:
         github_val = (profile_data["github_username"] or "").strip()
         update_fields["github_username"] = github_val
-        update_fields["github_connected"] = bool(github_val)
+
+    for field in ("student_id", "department", "semester"):
+        if field in profile_data:
+            update_fields[field] = profile_data[field]
 
     if not ObjectId.is_valid(student_id):
         return None
@@ -172,7 +175,7 @@ async def update_student_profile(student_id: str, profile_data: dict):
         )
         if result.matched_count == 0:
             return None
-        print(f"[Student] Profile github_username updated for student {student_id}")
+        print(f"[Student] Profile updated for student {student_id}")
         return await get_student_by_id(student_id)
     except Exception as e:
         print(f"[Student] Error updating profile for student {student_id}: {e}")

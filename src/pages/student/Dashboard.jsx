@@ -79,7 +79,9 @@ export default function Dashboard() {
   };
 
   const studentFullName = profile?.name || user?.name || "Allen John";
-  const academicProgram = "MCA S3 · Computer Applications";
+  const department = profile?.department || "MCA";
+  const semester = profile?.semester || 3;
+  const academicProgram = `${department} S${semester} · Computer Applications`;
 
   const upcomingLab = attendanceSummary?.upcoming_classes?.[0];
 

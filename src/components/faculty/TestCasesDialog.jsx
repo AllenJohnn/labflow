@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, Eye, EyeOff, Save, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import api from "../../services/api";

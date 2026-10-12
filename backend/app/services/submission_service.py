@@ -427,10 +427,13 @@ async def create_or_update_submission(student_doc: dict, exercise_id: str, paylo
         saved["id"] = submission_id
 
     # Fetch full student document to get github connection details
-    from app.database.mongodb import db
-    full_student = await db.students.find_one({"email": stu_email}) or {}
+    full_student = {}
+    try:
+        full_student = await db.students.find_one({"email": stu_email}) or {}
+    except Exception as e:
+        print(f"[Submission] DB student lookup for GitHub sync notice: {e}")
     github_conf = full_student.get("github") or {}
-    is_connected = github_conf.get("connected", full_student.get("github_connected", False))
+    is_connected = bool(github_conf.get("connected") and github_conf.get("encrypted_access_token"))
     
     if is_connected and github_conf.get("encrypted_access_token"):
         try:

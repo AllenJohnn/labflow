@@ -118,13 +118,13 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
         }
         
     current_executions = _active_executions.get(student_id, 0)
-    if current_executions >= 3:
+    if current_executions >= 1:
         return {
             "status": "Runtime Error",
             "execution_status": "execution_error",
             "language": language,
             "stdout": "",
-            "stderr": "Maximum concurrent executions reached for your session. Please wait.",
+            "stderr": "An execution is already running for your session. Please wait.",
             "compile_output": "",
             "exit_code": 1,
             "execution_time_ms": 0,

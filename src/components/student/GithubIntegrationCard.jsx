@@ -25,20 +25,24 @@ export default function GithubIntegrationCard() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
-
-  const loadStatus = async () => {
-    try {
-      const data = await getGithubStatus();
-      setStatus(data);
-    } catch (err) {
-      console.error("Failed to load GitHub status:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    loadStatus();
+    let active = true;
+    getGithubStatus()
+      .then((data) => {
+        if (!active) return;
+        setStatus(data);
+        setLoadError(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load GitHub status:", err);
+        if (active) setLoadError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
 
   const handleConnect = () => {
@@ -47,8 +51,14 @@ export default function GithubIntegrationCard() {
       toast.error("You must be logged in to connect GitHub.");
       return;
     }
-    const baseURL = (api.defaults.baseURL || "http://localhost:8000/api/v1").replace("127.0.0.1", "localhost");
-    window.location.href = `${baseURL}/auth/github/login?token=${token}`;
+    api.post("/auth/github/login").then(({ data }) => {
+      if (!data?.authorization_url) {
+        throw new Error("GitHub authorization URL was not returned.");
+      }
+      window.location.assign(data.authorization_url);
+    }).catch((err) => {
+      toast.error(err.response?.data?.detail || "Failed to start GitHub authorization.");
+    });
   };
 
   const handleDisconnect = async () => {
@@ -58,7 +68,7 @@ export default function GithubIntegrationCard() {
       setStatus({ connected: false });
       toast.success("GitHub disconnected successfully.");
     } catch (err) {
-      toast.error("Failed to disconnect GitHub.");
+      toast.error(err.response?.data?.detail || "Failed to disconnect GitHub.");
     } finally {
       setSaving(false);
     }
@@ -81,6 +91,7 @@ export default function GithubIntegrationCard() {
         </h2>
         
         <div className="pt-4 space-y-4">
+          {loadError && <p role="alert" className="text-[12px] text-red-600">Could not load GitHub connection status. Refresh the page to try again.</p>}
           <div className="flex items-start gap-3">
             <div className="bg-slate-100 p-2 rounded-full mt-0.5">
               <GithubIcon className="w-5 h-5 text-slate-600" />
@@ -127,8 +138,17 @@ export default function GithubIntegrationCard() {
               Connected Account
             </div>
             <div className="mt-1 flex items-center gap-2">
+              {status.avatar_url ? (
+                <img
+                  src={status.avatar_url}
+                  alt={`${status.username || "GitHub"} avatar`}
+                  className="h-8 w-8 rounded-full border border-slate-200 object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={(event) => { event.currentTarget.hidden = true; }}
+                />
+              ) : null}
               <span className="text-[14px] font-medium text-slate-800">
-                @{status.username}
+                @{status.username || "Connected account"}
               </span>
             </div>
             <p className="text-[12px] text-slate-500 mt-2 max-w-[400px] leading-relaxed">

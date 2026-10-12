@@ -1,5 +1,4 @@
-import { AlertCircle, CheckCircle2, Clock, Info, Terminal, XCircle } from "lucide-react";
-import * as React from "react";
+import { AlertCircle, CheckCircle2, Clock, Terminal, XCircle } from "lucide-react";
 
 export default function OutputPanel({ 
   outputResult, 
@@ -16,7 +15,6 @@ export default function OutputPanel({
   const status = outputResult?.status || "Idle";
   const stdout = outputResult?.stdout || "";
   const stderr = outputResult?.stderr || "";
-  const exitCode = outputResult?.exitCode;
   const executionTime = outputResult?.executionTime;
 
   const hasErrors = status === "Compilation Error" || status === "Runtime Error" || status === "Execution Error" || Boolean(stderr);
@@ -44,6 +42,18 @@ export default function OutputPanel({
           >
             <Terminal className="h-3.5 w-3.5" />
             <span>Output</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("input")}
+            className={`px-3 py-1.5 text-[11.5px] font-sans font-medium transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "input"
+                ? "bg-[#1e1e1e] text-white border-t-2 border-amber-500"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <span>Input</span>
           </button>
 
           <button
@@ -164,6 +174,19 @@ export default function OutputPanel({
                   </div>
                 )}
               </div>
+            )}
+
+            {activeTab === "input" && (
+              <label className="flex h-full flex-col gap-2 font-sans text-[12px] text-slate-400">
+                Standard input passed to your program when it runs.
+                <textarea
+                  value={stdin}
+                  onChange={(event) => setStdin(event.target.value)}
+                  aria-label="Standard input"
+                  placeholder="Enter input for your program"
+                  className="min-h-24 flex-1 resize-y rounded border border-[#3c3c3c] bg-[#252526] p-2 font-mono text-[12px] text-slate-200 outline-none focus:border-blue-500"
+                />
+              </label>
             )}
 
             {activeTab === "errors" && (

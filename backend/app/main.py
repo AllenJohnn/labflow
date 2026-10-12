@@ -1,4 +1,3 @@
-import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -11,7 +10,7 @@ from app.database.indexes import create_indexes
 from app.services.admin_service import init_default_admin
 from app.services.faculty_service import init_default_faculty, init_default_lab_data
 from app.services.student_service import init_default_student
-from app.routes import health, auth, student, faculty, admin
+from app.routes import health, auth, student, faculty, admin, exams
 
 import os
 import sys
@@ -43,7 +42,7 @@ from app.database.mongodb import db_wrapper
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db_wrapper.connect()
-    asyncio.create_task(async_db_init())
+    await async_db_init()
     yield
     await db_wrapper.close()
 
@@ -136,3 +135,6 @@ app.include_router(
     prefix="/api/v1/admin",
     tags=["Admin"]
 )
+
+app.include_router(exams.student_exam_router, prefix="/api/v1")
+app.include_router(exams.faculty_exam_router, prefix="/api/v1")

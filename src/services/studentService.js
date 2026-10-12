@@ -213,18 +213,15 @@ export const getStudentProfile = async (forceRefresh = false) => {
 };
 
 export const updateStudentProfile = async (profileData) => {
-  const payload = { github_username: profileData.github_username };
-  try {
-    const res = await api.put("/student/profile", payload);
-    if (res.data && res.data.data) {
-      cachedProfile = { ...cachedProfile, ...res.data.data };
-    }
-  } catch {
-    cachedProfile = {
-      ...(cachedProfile || {}),
-      github_username: profileData.github_username,
-    };
-  }
+  const payload = {
+    student_id: profileData.student_id,
+    department: profileData.department,
+    semester: profileData.semester,
+    github_username: profileData.github_username,
+  };
+  const res = await api.put("/student/profile", payload);
+  if (!res.data?.data) throw new Error("The server did not return the updated profile.");
+  cachedProfile = { ...cachedProfile, ...res.data.data };
   return cachedProfile;
 };
 
@@ -310,29 +307,13 @@ export const getStudentAnnouncements = async () => {
   if (cachedAnnouncements) {
     return cachedAnnouncements;
   }
-  cachedAnnouncements = [
-    {
-      id: "ann-1",
-      title: "NSA Lab 01 exercise assigned by Rakhi",
-      time: "Today",
-      author: "Rakhi",
-      unread: true,
-    },
-    {
-      id: "ann-2",
-      title: "DBMS submission evaluation completed for Exercise 02",
-      time: "Yesterday",
-      author: "Shidha",
-      unread: true,
-    },
-    {
-      id: "ann-3",
-      title: "Java Lab 02 instructions updated",
-      time: "Aug 08",
-      author: "Rosemary Mathew",
-      unread: false,
-    },
-  ];
+  try {
+    const res = await api.get("/student/announcements");
+    cachedAnnouncements = res.data?.data || [];
+  } catch (err) {
+    console.error("Error fetching student announcements:", err);
+    cachedAnnouncements = [];
+  }
   return cachedAnnouncements;
 };
 
@@ -467,21 +448,13 @@ export const runExerciseTests = async (exerciseId, payload) => {
 
 
 export const getGithubStatus = async () => {
-  try {
-    const res = await api.get(`/student/github/status?t=${new Date().getTime()}`);
-    return res.data?.data;
-  } catch (err) {
-    throw err;
-  }
+  const res = await api.get(`/student/github/status?t=${new Date().getTime()}`);
+  return res.data?.data;
 };
 
 
 export const disconnectGithub = async () => {
-  try {
-    const res = await api.post('/student/github/disconnect');
-    return res.data?.data;
-  } catch (err) {
-    throw err;
-  }
+  const res = await api.post('/student/github/disconnect');
+  return res.data?.data;
 };
 

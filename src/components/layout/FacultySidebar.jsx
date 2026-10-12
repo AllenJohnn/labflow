@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   BookOpen,
   CalendarCheck,
+  ClipboardList,
   LogOut,
   X,
 } from "lucide-react";
@@ -26,6 +27,11 @@ export default function FacultySidebar({ mobileOpen, setMobileOpen }) {
       name: "Attendance Roster",
       path: "/faculty/attendance",
       icon: CalendarCheck,
+    },
+    {
+      name: "Exams",
+      path: "/faculty/exams",
+      icon: ClipboardList,
     },
   ];
 

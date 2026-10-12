@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException, status, Depends
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr
+import httpx
 
 from app.config.settings import settings
 from app.services.auth_service import oauth
@@ -258,44 +259,58 @@ from app.services.jwt_service import decode_access_token
 from app.services.github_service import github_service, encrypt_token
 from app.database.mongodb import db
 
-@router.get("/github/login")
-async def github_login(request: Request, token: str):
-    # 1. Validate user via JWT
-    payload = decode_access_token(token)
-    if not payload or payload.get("role") != "student":
-        raise HTTPException(status_code=401, detail="Invalid or missing authentication token")
-    
-    # 2. Generate CSRF state wrapping user_id
+@router.post("/github/login")
+async def github_login(request: Request, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "student":
+        raise HTTPException(status_code=403, detail="GitHub integration is available to students only")
+
     nonce = secrets.token_urlsafe(16)
     state_payload = {
-        "sub": payload["sub"],
+        "sub": current_user["_id"],
         "nonce": nonce,
         "exp": datetime.now(timezone.utc) + timedelta(minutes=15)
     }
     state = jwt.encode(state_payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-    request.session["github_oauth_nonce"] = nonce
-    
-    # 3. Redirect to GitHub
     redirect_uri = settings.GITHUB_REDIRECT_URI
-    return await oauth.github.authorize_redirect(request, redirect_uri, state=state)
+    authorization = await oauth.github.create_authorization_url(redirect_uri, state=state)
+    return {"authorization_url": authorization["url"]}
 
 @router.get("/github/callback", name="github_callback")
-async def github_callback(request: Request, state: str):
+async def github_callback(state: str, code: str | None = None, error: str | None = None):
     # 1. Validate State and CSRF
     try:
         state_payload = jwt.decode(state, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid OAuth state parameter")
         
-    nonce = state_payload.get("nonce")
     user_id = state_payload.get("sub")
-    
-    # Session cookie might be dropped cross-origin on localhost redirect, 
-    # but the signed JWT state protects against CSRF on its own.
-    request.session.pop("github_oauth_nonce", None)
-    
-    # 2. Exchange Code for Token
-    token_resp = await oauth.github.authorize_access_token(request)
+    if not user_id or not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid OAuth state payload")
+
+    if error:
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/student/profile?github=error")
+    if not code:
+        raise HTTPException(status_code=400, detail="GitHub did not return an authorization code")
+
+    # The signed, expiring state is validated above, so the token exchange does not need a browser session cookie.
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            token_response = await client.post(
+                "https://github.com/login/oauth/access_token",
+                headers={"Accept": "application/json"},
+                data={
+                    "client_id": settings.GITHUB_CLIENT_ID,
+                    "client_secret": settings.GITHUB_CLIENT_SECRET,
+                    "code": code,
+                    "redirect_uri": settings.GITHUB_REDIRECT_URI,
+                },
+            )
+            token_response.raise_for_status()
+            token_resp = token_response.json()
+    except (httpx.HTTPError, ValueError) as exc:
+        print(f"[GitHub] OAuth token exchange failed: {exc}")
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/student/profile?github=error")
+
     access_token = token_resp.get("access_token")
     if not access_token:
         raise HTTPException(status_code=400, detail="Failed to retrieve GitHub access token")
@@ -328,6 +343,7 @@ async def github_callback(request: Request, state: str):
             "connected": True,
             "user_id": github_user_id,
             "username": github_username,
+            "avatar_url": gh_user.get("avatar_url"),
             "encrypted_access_token": encrypt_token(access_token),
             "token_expires_at": token_expires_at,
         }
@@ -337,9 +353,11 @@ async def github_callback(request: Request, state: str):
         update_data["github"]["encrypted_refresh_token"] = encrypt_token(refresh_token)
         update_data["github"]["refresh_token_expires_at"] = refresh_token_expires_at
         
-    await db.students.update_one(
+    update_result = await db.students.update_one(
         {"_id": ObjectId(user_id)},
         {"$set": update_data}
     )
+    if update_result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Student account was not found")
     
     return RedirectResponse(url=f"{settings.FRONTEND_URL}/student/profile?github=success")

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
@@ -47,7 +47,6 @@ export default function StudentIDE() {
   const [outputResult, setOutputResult] = useState(null);
   const [testResults, setTestResults] = useState(null);
   const [activeOutputTab, setActiveOutputTab] = useState("output");
-  const [isExercisePanelCollapsed, setIsExercisePanelCollapsed] = useState(false);
 
   const studentIdentifier = user?.student_id || user?.id || user?.email || "student";
   const draftKey = getDraftStorageKey(studentIdentifier, courseId, exerciseId);
@@ -105,7 +104,7 @@ export default function StudentIDE() {
           setCode(DEFAULT_STARTER_CODE[lang] || DEFAULT_STARTER_CODE.c);
           setHasLocalDraft(false);
         }
-      } catch (err) {
+      } catch {
         toast.error("Failed to load laboratory exercise.");
       } finally {
         if (isMounted) setLoading(false);
@@ -120,7 +119,9 @@ export default function StudentIDE() {
     setHasLocalDraft(true);
     try {
       localStorage.setItem(draftKey, newCode);
-    } catch (e) {}
+    } catch (error) {
+      console.warn("Could not save the local editor draft:", error);
+    }
   }, [draftKey]);
 
   const handleResetCode = () => {
@@ -133,7 +134,7 @@ export default function StudentIDE() {
     }
   };
 
-  const handleRun = async () => {
+  const handleRun = useCallback(async () => {
     if (!code.trim()) {
       toast.error("Please write some code before executing.");
       return;
@@ -158,7 +159,7 @@ export default function StudentIDE() {
     } finally {
       setIsRunning(false);
     }
-  };
+  }, [code, exercise, exerciseId, stdin]);
 
   const handleRunTests = async () => {
     if (!code.trim()) {
@@ -174,7 +175,7 @@ export default function StudentIDE() {
         code
       });
       setTestResults(res.data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to run automated tests.");
       setTestResults({ status: "Error", total_tests: 0, passed_tests: 0, results: [] });
     } finally {
@@ -220,7 +221,7 @@ export default function StudentIDE() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isRunning, isRunningTests, code]);
+  }, [isRunning, isRunningTests, handleRun]);
 
   if (loading) {
     return (
@@ -258,8 +259,6 @@ export default function StudentIDE() {
             defaultSize={25} 
             minSize={15} 
             collapsible={true} 
-            onCollapse={() => setIsExercisePanelCollapsed(true)}
-            onExpand={() => setIsExercisePanelCollapsed(false)}
             className="bg-card border-r"
           >
             <ExercisePanel exercise={exercise} submission={submission} courseId={courseId} />

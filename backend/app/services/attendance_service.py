@@ -240,7 +240,7 @@ async def record_student_lab_attendance(student_doc: dict, course_id: str, is_ma
         if current_minutes <= (start_minutes + grace_period_mins):
             attendance_status = "Present"
         else:
-            attendance_status = "Absent"
+            attendance_status = "Late"
     except Exception:
         attendance_status = "Present"
 

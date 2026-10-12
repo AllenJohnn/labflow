@@ -1,24 +1,88 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import api from "../../services/api";
+import { getCachedProfile, getStudentProfile } from "../../services/studentService";
 import CodeEditor from "../../components/ide/CodeEditor";
 import OutputPanel from "../../components/ide/OutputPanel";
 import { Play, RotateCcw, MonitorPlay, ArrowLeft } from "lucide-react";
 
+const LANGUAGE_LABELS = {
+  python: "Python 3",
+  c: "C (GCC)",
+  java: "Java",
+};
+
+const getLoggedInUsername = (user, profile) => {
+  const raw =
+    user?.username ||
+    profile?.username ||
+    user?.github_username ||
+    profile?.github_username ||
+    user?.name ||
+    profile?.name ||
+    (user?.email ? user.email.split("@")[0] : null) ||
+    "User";
+  return String(raw).replace(/["\\\r\n]/g, "").trim() || "User";
+};
+
+const getCodeTemplate = (lang, username = "User") => {
+  const safeName = String(username).replace(/["\\\r\n]/g, "").trim() || "User";
+  const templates = {
+    python: `# Welcome to the LabFlow Sandbox Playground!\n# Write your Python code below and hit Run.\n\nprint("Hello ${safeName}!")\n`,
+    c: `#include <stdio.h>\n\nint main() {\n    // Welcome to the LabFlow Sandbox Playground!\n    // Write your C code below and hit Run.\n    printf("Hello ${safeName}!\\n");\n    return 0;\n}\n`,
+    java: `// Welcome to the LabFlow Sandbox Playground!\n// Write your Java code below and hit Run.\n\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello ${safeName}!");\n    }\n}\n`,
+  };
+  return templates[lang] || templates.python;
+};
+
 export default function StandaloneIDE() {
   const { user } = useAuth();
-  
-  // State
-  const draftKey = `ls_scratch_${user?.id || 'guest'}`;
+  const [profile, setProfile] = useState(() => getCachedProfile());
+  const uid = user?.student_id || user?.id || 'guest';
+  const username = getLoggedInUsername(user, profile);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!profile) {
+      getStudentProfile()
+        .then((p) => {
+          if (isMounted && p) setProfile(p);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [profile]);
 
   // State
-  const [code, setCode] = useState(() => {
-    const saved = localStorage.getItem(draftKey);
-    return saved || "# Welcome to the LabFlow Sandbox Playground!\n# Write your code below and hit Run.\n\nprint('Hello Sandbox!')";
+  const [language, setLanguage] = useState(() => {
+    try {
+      const savedLang = localStorage.getItem(`ls_scratch_lang_${uid}`);
+      return savedLang && ["python", "c", "java"].includes(savedLang) ? savedLang : "python";
+    } catch {
+      return "python";
+    }
   });
-  const [language, setLanguage] = useState("python");
+
+  const [code, setCode] = useState(() => {
+    try {
+      const savedLang = localStorage.getItem(`ls_scratch_lang_${uid}`);
+      const activeLang = savedLang && ["python", "c", "java"].includes(savedLang) ? savedLang : "python";
+      const saved = localStorage.getItem(`ls_scratch_${uid}_${activeLang}`);
+      if (saved && !saved.includes("Hello Sandbox!") && !saved.includes("Hello User!")) return saved;
+      if (activeLang === "python") {
+        const legacy = localStorage.getItem(`ls_scratch_${uid}`);
+        if (legacy && !legacy.includes("Hello Sandbox!") && !legacy.includes("Hello User!")) return legacy;
+      }
+      return getCodeTemplate(activeLang, username);
+    } catch {
+      return getCodeTemplate("python", username);
+    }
+  });
+
   const [stdin, setStdin] = useState("");
   const [isStdinOpen, setIsStdinOpen] = useState(false);
   const [outputResult, setOutputResult] = useState(null);
@@ -26,22 +90,36 @@ export default function StandaloneIDE() {
   const [mobileTab, setMobileTab] = useState("editor");
   const [activeOutputTab, setActiveOutputTab] = useState("output");
 
-  // Save to localStorage on change
-  const handleCodeChange = useCallback((newCode) => {
+  // Save code changes to state & localStorage
+  const handleCodeChange = useCallback((newCode, targetLang = language) => {
     setCode(newCode);
     try {
-      localStorage.setItem(draftKey, newCode);
+      localStorage.setItem(`ls_scratch_${uid}_${targetLang}`, newCode);
+      localStorage.setItem(`ls_scratch_${uid}`, newCode);
+      localStorage.setItem(`ls_scratch_lang_${uid}`, targetLang);
     } catch (e) {
       console.warn("Could not persist sandbox draft to localStorage:", e);
     }
-  }, [draftKey]);
+  }, [uid, language]);
+
+  // Handle language change: switch language and load its default code template
+  const handleLanguageChange = (newLanguage) => {
+    if (newLanguage === language) return;
+    setLanguage(newLanguage);
+    const defaultTemplate = getCodeTemplate(newLanguage, username);
+    handleCodeChange(defaultTemplate, newLanguage);
+    setOutputResult(null);
+    toast.info(`Loaded ${LANGUAGE_LABELS[newLanguage] || newLanguage} default template.`);
+  };
 
   // Reset Sandbox
   const handleReset = () => {
-    if (window.confirm("Are you sure you want to clear your sandbox code?")) {
-      const defaultCode = language === "python" ? "print('Hello Sandbox!')" : "";
-      handleCodeChange(defaultCode);
-      toast.info("Sandbox cleared.");
+    const langLabel = LANGUAGE_LABELS[language] || language;
+    if (window.confirm(`Are you sure you want to reset your sandbox code to the default ${langLabel} template?`)) {
+      const defaultTemplate = getCodeTemplate(language, username);
+      handleCodeChange(defaultTemplate, language);
+      setOutputResult(null);
+      toast.info("Sandbox reset to default template.");
     }
   };
 
@@ -104,7 +182,7 @@ export default function StandaloneIDE() {
         <div className="flex items-center gap-2 sm:gap-3">
           <select
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={(e) => handleLanguageChange(e.target.value)}
             disabled={isRunning}
             className="bg-[#0f3470] border border-[#2b59b5] text-white text-[12px] font-semibold px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer appearance-none rounded-none"
           >

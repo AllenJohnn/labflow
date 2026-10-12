@@ -11,7 +11,10 @@ from app.services.student_service import (
 router = APIRouter()
 
 class ProfileUpdateSchema(BaseModel):
-    github_username: str | None = Field(default=None, description="Only GitHub username is editable by students")
+    student_id: str | None = Field(default=None, min_length=1, max_length=64)
+    department: str | None = Field(default=None, min_length=1, max_length=64)
+    semester: int | None = Field(default=None, ge=1, le=12)
+    github_username: str | None = Field(default=None, max_length=39)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -31,7 +34,7 @@ async def update_profile(
 
     updated_student = await update_student_profile(
         student_id=student_id,
-        profile_data={"github_username": payload.github_username}
+        profile_data=payload.model_dump(exclude_unset=True)
     )
 
     if not updated_student:
@@ -324,17 +327,50 @@ async def student_manual_check_in(
 @router.get("/github/status")
 async def github_status(current_student: dict = Depends(get_current_student)):
     github = current_student.get("github") or {}
-    is_connected = github.get("connected")
-    if is_connected is None:
-        is_connected = current_student.get("github_connected", False)
+    is_connected = bool(github.get("connected"))
         
     return {
         "status": "success",
         "data": {
             "connected": is_connected,
-            "username": github.get("username", current_student.get("github_username"))
+            "username": github.get("username") if is_connected else None,
+            "avatar_url": github.get("avatar_url")
         }
     }
+
+
+@router.get("/announcements")
+async def get_student_announcements(current_student: dict = Depends(get_current_student)):
+    from app.database.mongodb import db
+    from app.services.faculty_service import IN_MEMORY_ANNOUNCEMENTS
+
+    enrolled_courses = {str(course).lower() for course in current_student.get("enrolled_courses", ["nsa", "adbms", "java"])}
+    announcements = []
+    try:
+        cursor = db.announcements.find({}).sort("created_at", -1)
+        documents = await cursor.to_list(length=50)
+    except Exception as exc:
+        print(f"[Student] Announcement lookup notice: {exc}")
+        documents = list(IN_MEMORY_ANNOUNCEMENTS)
+
+    for item in documents:
+        audience = str(item.get("audience", "")).lower()
+        course_id = str(item.get("course_id", "")).lower()
+        if audience not in {"", "everyone", "students", "students only"}:
+            continue
+        if course_id and course_id not in enrolled_courses:
+            continue
+        created_at = item.get("created_at")
+        announcements.append({
+            "id": str(item.get("_id", item.get("id", ""))),
+            "title": item.get("title", ""),
+            "content": item.get("content", ""),
+            "author": item.get("author", "Faculty Member"),
+            "time": item.get("time") or (created_at.isoformat() if hasattr(created_at, "isoformat") else "Recently"),
+            "unread": False,
+        })
+
+    return {"status": "success", "data": announcements}
 
 
 @router.post("/github/disconnect")
@@ -344,6 +380,6 @@ async def github_disconnect(current_student: dict = Depends(get_current_student)
     
     await db.students.update_one(
         {"_id": ObjectId(current_student["_id"])},
-        {"$unset": {"github": ""}, "$set": {"github_connected": False}}
+        {"$unset": {"github": ""}, "$set": {"github_connected": False, "github_username": ""}}
     )
     return {"status": "success", "message": "GitHub disconnected successfully"}

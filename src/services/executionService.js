@@ -19,7 +19,7 @@ import api from "./api";
  * @param {string} [params.stdin] - Optional standard input
  * @returns {Promise<Object>} Execution result object
  */
-export async function runCode({ language, code, exerciseId, stdin = "" }) {
+export async function runCode({ language, code, exerciseId, examId, questionId, stdin = "" }) {
   if (!code || !code.trim()) {
     return {
       status: "Compilation Error",
@@ -33,7 +33,10 @@ export async function runCode({ language, code, exerciseId, stdin = "" }) {
   }
 
   try {
-    const res = await api.post(`/student/exercises/${exerciseId}/run`, {
+    const endpoint = examId && questionId
+      ? `/student/exams/${examId}/questions/${questionId}/run`
+      : `/student/exercises/${exerciseId}/run`;
+    const res = await api.post(endpoint, {
       language,
       code,
       stdin,
@@ -44,6 +47,16 @@ export async function runCode({ language, code, exerciseId, stdin = "" }) {
   } catch (err) {
     if (err.response && err.response.data && err.response.data.data) {
       return err.response.data.data;
+    }
+    if (err.response?.data?.detail) {
+      return {
+        status: "Execution Error",
+        stdout: "",
+        stderr: err.response.data.detail,
+        exitCode: 1,
+        executionTime: "—",
+        testResults: [],
+      };
     }
     return {
       status: "Service Unavailable",

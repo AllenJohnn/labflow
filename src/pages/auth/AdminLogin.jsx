@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import fisatLogo from "../../assets/fisat-logo.jpeg";
 import { useAuth } from "../../context/AuthContext";
-import { loginAdmin } from "../../services/authService";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -23,6 +22,7 @@ export default function AdminLogin() {
 
     try {
       setLoading(true);
+      const { loginAdmin } = await import("../../services/authService");
       const res = await loginAdmin(email, password);
       login(res.access_token);
       navigate("/admin/dashboard", { replace: true });

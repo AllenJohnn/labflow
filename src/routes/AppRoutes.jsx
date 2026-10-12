@@ -1,43 +1,48 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "../pages/auth/Login";
-import FacultyLogin from "../pages/auth/FacultyLogin";
-import AdminLogin from "../pages/auth/AdminLogin";
-import Callback from "../pages/auth/Callback";
-import MaintenancePage from "../pages/auth/MaintenancePage";
+const Login = lazy(() => import("../pages/auth/Login"));
+const FacultyLogin = lazy(() => import("../pages/auth/FacultyLogin"));
+const AdminLogin = lazy(() => import("../pages/auth/AdminLogin"));
+const Callback = lazy(() => import("../pages/auth/Callback"));
+const MaintenancePage = lazy(() => import("../pages/auth/MaintenancePage"));
 
-import StudentDashboard from "../pages/student/Dashboard";
-import StudentLaboratories from "../pages/student/Laboratories";
-import LaboratoryDetail from "../pages/student/LaboratoryDetail";
-import StudentExercises from "../pages/student/Exercises";
-import StudentIDE from "../pages/student/StudentIDE";
-import StandaloneIDE from "../pages/student/StandaloneIDE";
-import StudentSubmissions from "../pages/student/Submissions";
-import StudentProfile from "../pages/student/Profile";
-import StudentAttendance from "../pages/student/Attendance";
+const StudentDashboard = lazy(() => import("../pages/student/Dashboard"));
+const StudentLaboratories = lazy(() => import("../pages/student/Laboratories"));
+const LaboratoryDetail = lazy(() => import("../pages/student/LaboratoryDetail"));
+const StudentExercises = lazy(() => import("../pages/student/Exercises"));
+const StudentIDE = lazy(() => import("../pages/student/StudentIDE"));
+const StandaloneIDE = lazy(() => import("../pages/student/StandaloneIDE"));
+const StudentSubmissions = lazy(() => import("../pages/student/Submissions"));
+const StudentProfile = lazy(() => import("../pages/student/Profile"));
+const StudentAttendance = lazy(() => import("../pages/student/Attendance"));
+const StudentExams = lazy(() => import("../pages/student/Exams"));
+const ExamRoom = lazy(() => import("../pages/student/ExamRoom"));
 
-import FacultyDashboard from "../pages/faculty/Dashboard";
-import FacultyLaboratories from "../pages/faculty/Laboratories";
-import FacultyLaboratoryDetail from "../pages/faculty/LaboratoryDetail";
-import FacultyAttendance from "../pages/faculty/Attendance";
+const FacultyDashboard = lazy(() => import("../pages/faculty/Dashboard"));
+const FacultyLaboratories = lazy(() => import("../pages/faculty/Laboratories"));
+const FacultyLaboratoryDetail = lazy(() => import("../pages/faculty/LaboratoryDetail"));
+const FacultyAttendance = lazy(() => import("../pages/faculty/Attendance"));
+const FacultyExams = lazy(() => import("../pages/faculty/FacultyExams"));
 
-import AdminDashboard from "../pages/admin/Dashboard";
-import Classes from "../pages/admin/Classes";
-import ClassDetail from "../pages/admin/ClassDetail";
-import Students from "../pages/admin/Students";
-import StudentDetail from "../pages/admin/StudentDetail";
-import Faculty from "../pages/admin/Faculty";
-import Laboratories from "../pages/admin/Laboratories";
-import Enrollments from "../pages/admin/Enrollments";
-import Announcements from "../pages/admin/Announcements";
-import AuditLog from "../pages/admin/AuditLog";
-import Maintenance from "../pages/admin/Maintenance";
-import Settings from "../pages/admin/Settings";
+const AdminDashboard = lazy(() => import("../pages/admin/Dashboard"));
+const Classes = lazy(() => import("../pages/admin/Classes"));
+const ClassDetail = lazy(() => import("../pages/admin/ClassDetail"));
+const Students = lazy(() => import("../pages/admin/Students"));
+const StudentDetail = lazy(() => import("../pages/admin/StudentDetail"));
+const Faculty = lazy(() => import("../pages/admin/Faculty"));
+const Laboratories = lazy(() => import("../pages/admin/Laboratories"));
+const Enrollments = lazy(() => import("../pages/admin/Enrollments"));
+const Announcements = lazy(() => import("../pages/admin/Announcements"));
+const AuditLog = lazy(() => import("../pages/admin/AuditLog"));
+const Maintenance = lazy(() => import("../pages/admin/Maintenance"));
+const Settings = lazy(() => import("../pages/admin/Settings"));
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading page...</div>}>
+      <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/faculty/login" element={<FacultyLogin />} />
@@ -117,6 +122,22 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/student/exams"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentExams />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/exams/:examId/room"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <ExamRoom />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/faculty/dashboard"
@@ -147,6 +168,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["faculty"]}>
             <FacultyAttendance />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/faculty/exams"
+        element={
+          <ProtectedRoute allowedRoles={["faculty"]}>
+            <FacultyExams />
           </ProtectedRoute>
         }
       />
@@ -249,6 +278,7 @@ export default function AppRoutes() {
       />
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }

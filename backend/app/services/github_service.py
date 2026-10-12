@@ -17,14 +17,10 @@ _POST_CREATE_DELAY_SECONDS = 2.5
 _MAX_PUSH_RETRIES = 3
 _RETRY_BACKOFF_SECONDS = 2.0
 
-_fallback_key = None
 def get_fernet():
-    global _fallback_key
     key = settings.GITHUB_ENCRYPTION_KEY
     if not key:
-        if not _fallback_key:
-            _fallback_key = Fernet.generate_key()
-        key = _fallback_key
+        raise RuntimeError("GITHUB_ENCRYPTION_KEY must be configured to use GitHub integration")
     return Fernet(key)
 
 def encrypt_token(token: str) -> str:

@@ -6,6 +6,7 @@ import {
   FileText,
   CheckSquare,
   Calendar,
+  ClipboardCheck,
   User,
   LogOut,
   X,
@@ -44,6 +45,11 @@ export default function StudentSidebar({ mobileOpen, setMobileOpen }) {
       name: "Submissions",
       path: "/student/submissions",
       icon: CheckSquare,
+    },
+    {
+      name: "Exams",
+      path: "/student/exams",
+      icon: ClipboardCheck,
     },
     {
       name: "Attendance",
