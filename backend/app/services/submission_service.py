@@ -257,12 +257,12 @@ async def run_exercise_tests(student_doc: dict, exercise_id: str, language: str,
     from app.services.judge0_service import execute_code as judge0_execute
     
     stu_id = student_doc.get("student_id", "FIT25MCA-2008")
-    sem = asyncio.Semaphore(3) # Concurrency limit of 3
+    sem = asyncio.Semaphore(1) # Run sequentially to avoid concurrency lock and rate limits on sandbox
     
     async def run_single_test(tc: dict, index: int):
         async with sem:
             result = await judge0_execute(
-                student_id=stu_id,
+                student_id=f"{stu_id}_tc_{index}",
                 language=language,
                 code=code,
                 stdin=tc.get("input", "")

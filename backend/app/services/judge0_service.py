@@ -89,21 +89,9 @@ def normalize_response(judge_res: Dict[str, Any], language: str, execution_time_
     }
 
 async def execute_code(student_id: str, language: str, code: str, stdin: str = "") -> Dict[str, Any]:
-    if not is_judge0_configured():
-        return {
-            "status": "Service Unavailable",
-            "execution_status": "service_unavailable",
-            "language": language,
-            "stdout": "",
-            "stderr": "Code execution service is currently unavailable.",
-            "compile_output": "",
-            "exit_code": -1,
-            "execution_time_ms": 0,
-            "memory_kb": 0,
-            "timed_out": False
-        }
-        
-    if language not in LANGUAGE_MAPPING:
+    from app.services.local_execution_service import can_execute_locally, execute_locally
+
+    if not can_execute_locally(language) and language not in LANGUAGE_MAPPING:
         return {
             "status": "Runtime Error",
             "execution_status": "execution_error",
@@ -116,7 +104,7 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
             "memory_kb": 0,
             "timed_out": False
         }
-        
+
     current_executions = _active_executions.get(student_id, 0)
     if current_executions >= 1:
         return {
@@ -133,12 +121,37 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
         }
 
     _active_executions[student_id] = current_executions + 1
-    
+
     try:
+        # 1. Try local execution first (near-instant for Python/Java)
+        if can_execute_locally(language):
+            try:
+                result = await execute_locally(language, code, stdin)
+                if result is not None:
+                    logger.info(f"[LocalExec] {language} executed locally in {result.get('execution_time_ms', 0)}ms")
+                    return result
+            except Exception as e:
+                logger.warning(f"[LocalExec] Local execution failed for {language}, falling back to Judge0: {e}")
+
+        # 2. Fall back to Judge0 remote sandbox
+        if not is_judge0_configured():
+            return {
+                "status": "Service Unavailable",
+                "execution_status": "service_unavailable",
+                "language": language,
+                "stdout": "",
+                "stderr": "Code execution service is currently unavailable.",
+                "compile_output": "",
+                "exit_code": -1,
+                "execution_time_ms": 0,
+                "memory_kb": 0,
+                "timed_out": False
+            }
         api_url = settings.JUDGE0_API_URL.rstrip("/")
         headers = {
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "User-Agent": "LabFlow-IDE/1.0 (Student Sandbox; +https://labflow.local)"
         }
         if settings.JUDGE0_API_KEY:
             headers["X-Auth-Token"] = settings.JUDGE0_API_KEY
@@ -154,7 +167,7 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
             "base64_encoded": True
         }
         
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=20.0) as client:
             try:
                 # 1. Create submission
                 submit_res = await client.post(
@@ -170,10 +183,11 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
                     raise Exception("No token received from Judge0")
                 
                 # 2. Poll status
-                max_polls = 15
-                poll_interval = 0.5
+                poll_interval = getattr(settings, "IDE_POLL_INTERVAL_SECONDS", 1.0)
+                timeout_seconds = getattr(settings, "IDE_POLL_TIMEOUT_SECONDS", 45.0)
+                max_polls = max(1, int(timeout_seconds / poll_interval))
                 
-                for _ in range(max_polls):
+                for poll_idx in range(max_polls):
                     await asyncio.sleep(poll_interval)
                     poll_res = await client.get(
                         f"{api_url}/submissions/{token}",
@@ -185,18 +199,20 @@ async def execute_code(student_id: str, language: str, code: str, stdin: str = "
                     
                     status_id = result.get("status", {}).get("id", 1)
                     if status_id not in [1, 2]: # 1=In Queue, 2=Processing
-                        return normalize_response(result, language, int(max_polls * poll_interval * 1000))
+                        elapsed_ms = int((poll_idx + 1) * poll_interval * 1000)
+                        return normalize_response(result, language, elapsed_ms)
                         
                 # If we get here, it timed out overall
+                total_wait_ms = int(max_polls * poll_interval * 1000)
                 return {
                     "status": "Time Limit Exceeded",
                     "execution_status": "timeout",
                     "language": language,
                     "stdout": "",
-                    "stderr": "Execution timed out.",
+                    "stderr": "Execution timed out. The sandbox queue did not finish executing within the allotted time limit.",
                     "compile_output": "",
                     "exit_code": 1,
-                    "execution_time_ms": int(max_polls * poll_interval * 1000),
+                    "execution_time_ms": total_wait_ms,
                     "memory_kb": 0,
                     "timed_out": True
                 }

@@ -144,7 +144,13 @@ export default function StandaloneIDE() {
         code,
         stdin
       });
-      setOutputResult(res.data?.data);
+      const data = res.data?.data;
+      setOutputResult(data);
+      if (data?.status === "Compilation Error" || data?.status === "Runtime Error" || data?.status === "Time Limit Exceeded" || (!data?.stdout && data?.stderr)) {
+        setActiveOutputTab("errors");
+      } else {
+        setActiveOutputTab("output");
+      }
     } catch (err) {
       setOutputResult({
         status: "Execution Error",
@@ -154,6 +160,7 @@ export default function StandaloneIDE() {
         executionTime: "--",
         testResults: [],
       });
+      setActiveOutputTab("errors");
     } finally {
       setIsRunning(false);
     }

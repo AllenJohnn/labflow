@@ -109,6 +109,8 @@ export default function OutputPanel({
                       ? "bg-emerald-950 text-emerald-300 border border-emerald-800"
                       : status === "Compilation Error" || status === "Runtime Error" || status === "Execution Error"
                       ? "bg-red-950 text-red-300 border border-red-800"
+                      : status === "Time Limit Exceeded"
+                      ? "bg-amber-950 text-amber-300 border border-amber-800"
                       : "bg-slate-800 text-slate-300 border border-slate-700"
                   }`}
                 >
@@ -199,6 +201,11 @@ export default function OutputPanel({
                 {status === "Runtime Error" && (
                   <div className="text-red-400 font-sans font-medium flex items-center gap-2 mb-2">
                     <AlertCircle className="h-4 w-4" /> Runtime Error
+                  </div>
+                )}
+                {status === "Time Limit Exceeded" && (
+                  <div className="text-amber-400 font-sans font-medium flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4" /> Time Limit Exceeded
                   </div>
                 )}
                 {stderr ? (

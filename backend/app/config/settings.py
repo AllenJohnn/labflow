@@ -35,6 +35,8 @@ class Settings:
     JUDGE0_API_URL = os.getenv("JUDGE0_API_URL", "") # e.g. https://judge0-ce.p.rapidapi.com
     JUDGE0_API_KEY = os.getenv("JUDGE0_API_KEY", "")
     IDE_EXECUTION_TIMEOUT_SECONDS = float(os.getenv("IDE_EXECUTION_TIMEOUT_SECONDS", "5.0"))
+    IDE_POLL_TIMEOUT_SECONDS = float(os.getenv("IDE_POLL_TIMEOUT_SECONDS", "45.0"))
+    IDE_POLL_INTERVAL_SECONDS = float(os.getenv("IDE_POLL_INTERVAL_SECONDS", "1.0"))
     IDE_MAX_OUTPUT_BYTES = int(os.getenv("IDE_MAX_OUTPUT_BYTES", "65536")) # 64KB
     IDE_MEMORY_LIMIT_KB = int(os.getenv("IDE_MEMORY_LIMIT_KB", "128000")) # 128MB
 

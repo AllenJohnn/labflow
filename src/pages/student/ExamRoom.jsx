@@ -253,7 +253,7 @@ export default function ExamRoom() {
         stdin,
       });
       setOutputResult(result);
-      if (["Compilation Error", "Runtime Error", "Execution Error"].includes(result.status)) {
+      if (["Compilation Error", "Runtime Error", "Execution Error", "Time Limit Exceeded"].includes(result.status) || (!result.stdout && result.stderr)) {
         setActiveOutputTab("errors");
       }
     } catch (runError) {

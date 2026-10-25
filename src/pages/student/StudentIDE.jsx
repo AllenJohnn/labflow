@@ -150,7 +150,7 @@ export default function StudentIDE() {
         exerciseId: exercise?.id || exercise?.exercise_id || exerciseId,
       });
       setOutputResult(result);
-      if (result.status === "Compilation Error" || result.status === "Runtime Error") {
+      if (result.status === "Compilation Error" || result.status === "Runtime Error" || result.status === "Time Limit Exceeded" || (!result.stdout && result.stderr)) {
          setActiveOutputTab("errors");
       }
     } catch (err) {
